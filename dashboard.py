@@ -51,7 +51,7 @@ SPEARMAN_IMGS = {
 @st.cache_data
 def load_comments():
     path = os.path.join(BASE, "comment_analysis", "comments_sentiment_all.csv")
-    df = pd.read_csv(path)
+    df = pd.read_csv(path, encoding="utf-8-sig")
     df = df.dropna(subset=["x", "y", "comment"])
     # English only: keep comments with mostly ASCII characters
     df = df[df["comment"].astype(str).str.len() > 8]
