@@ -91,26 +91,19 @@ if sel_gender != "All":
 with col_left:
     st.markdown("### Welcome")
     st.caption(
-        "This map brings together participatory emotional mapping data and "
-        "Copernicus satellite indicators to show how Prague residents experience "
-        "their city and identify priority zones for urban improvement."
+        "Participatory emotional mapping combined with Copernicus satellite "
+        "indicators to identify priority zones for urban improvement in Prague."
     )
     st.markdown("---")
 
-    st.markdown("### Emotion Legend")
-    for emotion, color in EMOTION_COLORS.items():
-        st.markdown(
-            f'<span style="display:inline-block;width:12px;height:12px;'
-            f'border-radius:50%;background:{color};margin-right:8px;'
-            f'vertical-align:middle;"></span>{emotion}',
-            unsafe_allow_html=True,
-        )
-    st.markdown("---")
-
-    st.markdown("### Data Credit")
-    st.caption("emotionalmap.eu · Pánek et al., 2021")
-    st.caption("Copernicus Sentinel-2 NDVI 2023")
-    st.caption("GHSL Population 2020")
+    st.markdown("**Emotion Legend**")
+    legend_html = "".join([
+        f'<div style="display:flex;align-items:center;gap:7px;margin:3px 0;font-size:12px;">'
+        f'<span style="width:10px;height:10px;border-radius:50%;background:{color};'
+        f'flex-shrink:0;display:inline-block;"></span>{emotion}</div>'
+        for emotion, color in EMOTION_COLORS.items()
+    ])
+    st.markdown(legend_html, unsafe_allow_html=True)
 
 # ── Map ────────────────────────────────────────────────────────────────────────
 with col_map:
