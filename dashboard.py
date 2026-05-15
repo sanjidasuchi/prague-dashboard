@@ -52,6 +52,7 @@ SPEARMAN_IMGS = {
 def load_comments():
     path = os.path.join(BASE, "comment_analysis", "comments_sentiment_all.csv")
     df = pd.read_csv(path, encoding="utf-8-sig")
+    df.columns = df.columns.str.strip()          # strip any BOM/whitespace from column names
     df = df.dropna(subset=["x", "y", "comment"])
     # English only: keep comments with mostly ASCII characters
     df = df[df["comment"].astype(str).str.len() > 8]
@@ -120,15 +121,12 @@ with col_map:
     )
     cluster = MarkerCluster(max_cluster_radius=60).add_to(m)
 
-    # Sample proportionally across emotions so all are represented (max 3000)
+    # Sample max 3000 points for fast rendering
     MAX_POINTS = 3000
     if len(filtered) > MAX_POINTS:
-        map_data = (filtered.groupby("emotion", group_keys=False)
-                    .apply(lambda g: g.sample(
-                        min(len(g), max(1, int(MAX_POINTS * len(g) / len(filtered)))),
-                        random_state=42)))
+        map_data = filtered.sample(MAX_POINTS, random_state=42).reset_index(drop=True)
     else:
-        map_data = filtered
+        map_data = filtered.reset_index(drop=True)
 
     for _, row in map_data.iterrows():
         color = EMOTION_COLORS.get(row["emotion"], "#888888")
