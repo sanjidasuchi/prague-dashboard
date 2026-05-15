@@ -171,18 +171,36 @@ with col_right:
                       legend=dict(font=dict(size=10)))
     st.plotly_chart(fig, use_container_width=True)
 
-# ── BOTTOM 1: Spearman bars ────────────────────────────────────────────────────
+# ── BOTTOM 1: Factor analysis tabs ────────────────────────────────────────────
 st.divider()
-st.markdown("### Factor Analysis — Spearman Correlations")
+st.markdown("### Factor Analysis — Spearman Correlations & Bivariate Maps")
 
-cols = st.columns(7)
-for col, (name, rel_path) in zip(cols, SPEARMAN_IMGS.items()):
-    full_path = os.path.join(BASE, rel_path)
-    with col:
-        if os.path.exists(full_path):
-            st.image(full_path, caption=name, use_container_width=True)
-        else:
-            st.warning(f"{name} chart missing")
+FACTOR_DATA = {
+    "Safety":         {"bar": "safety/safety_spearman_bar.png",               "map": "maps/safety_bivariate.png"},
+    "Proudness":      {"bar": "proudness/proudness_spearman_bar.png",          "map": "maps/proudness_bivariate.jpg"},
+    "Free Time":      {"bar": "Free_time/freetime_spearman_bar.png",           "map": "maps/freetime_bivariate.jpg"},
+    "Green Space":    {"bar": "green_space/greenspace_spearman_bar.png",       "map": "maps/greenspace_bivariate.jpg"},
+    "Need to Change": {"bar": "need_to_change/needchange_spearman_bar.png",    "map": "maps/needchange_bivariate.jpg"},
+    "Traffic Hazard": {"bar": "traffic/traffic_spearman_bar_final.png",        "map": "maps/traffic_bivariate.jpg"},
+    "Waste Bin":      {"bar": "waste_bin/wastebin_spearman_bar.png",           "map": "maps/wastebin_bivariate.jpg"},
+}
+
+tabs = st.tabs(list(FACTOR_DATA.keys()))
+for tab, (factor, paths) in zip(tabs, FACTOR_DATA.items()):
+    with tab:
+        col_bar, col_map = st.columns(2)
+        with col_bar:
+            st.markdown(f"**Spearman Correlation — {factor}**")
+            bar_path = os.path.join(BASE, paths["bar"])
+            if os.path.exists(bar_path):
+                st.image(bar_path, use_container_width=True)
+        with col_map:
+            st.markdown(f"**Bivariate Map — {factor}**")
+            map_path = os.path.join(BASE, paths["map"])
+            if os.path.exists(map_path):
+                st.image(map_path, use_container_width=True)
+            else:
+                st.caption("Map not available")
 
 # ── BOTTOM 2: Sentiment charts ─────────────────────────────────────────────────
 st.divider()
