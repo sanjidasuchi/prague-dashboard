@@ -20,7 +20,10 @@ st.markdown("""
     .block-container { padding-top: 1rem; padding-bottom: 0rem; }
     h1 { text-align: center; font-size: 1.8rem; color: #1a1a2e; margin-bottom: 0.5rem; }
     h3 { font-size: 1rem; margin-bottom: 0.3rem; }
-    .stSelectbox label { font-size: 13px; font-weight: 600; }
+    .filter-label { font-size: 11px; font-weight: 600; color: #555;
+                    margin-bottom: 1px; margin-top: 4px; }
+    div[data-testid="stSelectbox"] > div { min-height: 32px; }
+    div[data-testid="stSelectbox"] > div > div { font-size: 12px; padding: 2px 8px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -69,14 +72,17 @@ col_left, col_map, col_right = st.columns([1, 5, 1.4])
 
 # ── Right: filters (read first so filtered df is available for map) ────────────
 with col_right:
-    st.markdown("### Filters")
+    st.markdown('<p style="font-size:13px;font-weight:700;margin-bottom:4px;">Filters</p>', unsafe_allow_html=True)
     emotions = ["All"] + sorted(df["emotion"].unique().tolist())
     ages     = ["All"] + ["0-19","20-29","30-39","40-49","50-59","60-69","70+"]
     genders  = ["All"] + sorted(df["gender"].dropna().unique().tolist())
 
-    sel_emotion = st.selectbox("Emotion / Factor", emotions)
-    sel_age     = st.selectbox("Age Group",        ages)
-    sel_gender  = st.selectbox("Gender",           genders)
+    st.markdown('<p class="filter-label">Emotion</p>', unsafe_allow_html=True)
+    sel_emotion = st.selectbox("Emotion", emotions, label_visibility="collapsed")
+    st.markdown('<p class="filter-label">Age Group</p>', unsafe_allow_html=True)
+    sel_age     = st.selectbox("Age Group", ages, label_visibility="collapsed")
+    st.markdown('<p class="filter-label">Gender</p>', unsafe_allow_html=True)
+    sel_gender  = st.selectbox("Gender", genders, label_visibility="collapsed")
 
 # ── Filter data ────────────────────────────────────────────────────────────────
 filtered = df.copy()
