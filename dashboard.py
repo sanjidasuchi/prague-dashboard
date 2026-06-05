@@ -98,6 +98,15 @@ def load_data():
 
 comments, hex_topics, geojson = load_data()
 
+def shape_centroid(geometry):
+    try:
+        coords = geometry["coordinates"][0]
+        lons = [c[0] for c in coords]
+        lats = [c[1] for c in coords]
+        return [sum(lons)/len(lons), sum(lats)/len(lats)]
+    except:
+        return None
+
 # ── Layout ─────────────────────────────────────────────────────────────────────
 col_left, col_map, col_right = st.columns([1, 5, 1.4])
 
@@ -259,15 +268,6 @@ with col_map:
             ).add_to(m)
 
     st_folium(m, width=None, height=450, returned_objects=[])
-
-def shape_centroid(geometry):
-    try:
-        coords = geometry["coordinates"][0]
-        lons = [c[0] for c in coords]
-        lats = [c[1] for c in coords]
-        return [sum(lons)/len(lons), sum(lats)/len(lats)]
-    except:
-        return None
 
 # ── Right: sentiment donut ─────────────────────────────────────────────────────
 with col_right:
