@@ -212,9 +212,20 @@ with col_left:
 
 # ── MAP SECTION ────────────────────────────────────────────────────────────────
 with col_map:
-    mode = st.radio("mode",
-                    ["🗺 Bivariate", "💬 Comments", "⟺ Compare"],
-                    horizontal=True, label_visibility="collapsed")
+    mode_col, cmp_col = st.columns([3, 1])
+    with mode_col:
+        mode = st.radio("mode",
+                        ["🗺 Bivariate", "💬 Comments", "⟺ Compare"],
+                        horizontal=True, label_visibility="collapsed")
+    with cmp_col:
+        if mode == "⟺ Compare":
+            st.markdown('<span style="font-size:11px;font-weight:600">Compare with</span>',
+                        unsafe_allow_html=True)
+            sel_topic2 = st.selectbox("cmp",
+                                      [t for t in list(TOPIC_EMOTION.keys()) if t != sel_topic],
+                                      label_visibility="collapsed", key="t2")
+        else:
+            sel_topic2 = [t for t in list(TOPIC_EMOTION.keys()) if t != sel_topic][0]
 
     topic_df  = hex_topics[hex_topics["topic"] == sel_topic].set_index("GRID_ID")
     topic_df2 = hex_topics[hex_topics["topic"] == sel_topic2].set_index("GRID_ID")
@@ -301,14 +312,6 @@ with col_map:
 
     # ── COMPARE MAP — swipe on one map via HTML ────────────────────────────────
     elif mode == "⟺ Compare":
-        # Compare topic selector — top right of map column
-        _, comp_col = st.columns([3, 1])
-        with comp_col:
-            st.markdown('<span style="font-size:11px;font-weight:600">Compare with</span>',
-                        unsafe_allow_html=True)
-            sel_topic2 = st.selectbox("Compare with",
-                                      [t for t in topics if t != sel_topic],
-                                      label_visibility="collapsed", key="t2")
         topic_df2 = hex_topics[hex_topics["topic"] == sel_topic2].set_index("GRID_ID")
 
         m = folium.Map(location=[50.075,14.437], zoom_start=11,
