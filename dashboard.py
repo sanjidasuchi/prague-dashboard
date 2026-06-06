@@ -109,17 +109,7 @@ def popup_html(gid, tdf, cbh):
             f'</table><hr style="margin:3px 0">'
             f'<b style="font-size:10px">Comments:</b>{c_html}</div>')
 
-# Legends inside map — different corners so they never overlap
-EMOTION_LEG = (
-    '<div style="position:fixed;bottom:30px;left:10px;z-index:9999;'
-    'background:rgba(255,255,255,0.93);padding:6px 9px;border-radius:8px;'
-    'border:1px solid #ccc;font-size:11px;box-shadow:2px 2px 5px rgba(0,0,0,0.15)">'
-    '<b>Emotions</b><br>'
-    + "".join([f'<span style="display:inline-block;width:9px;height:9px;border-radius:50%;'
-               f'background:{c};margin-right:5px;vertical-align:middle"></span>{e}<br>'
-               for e,c in EMOTION_COLORS.items()])
-    + '</div>'
-)
+# Sentiment legend — bottom-right inside map
 SENTIMENT_LEG = (
     '<div style="position:fixed;bottom:30px;right:10px;z-index:9999;'
     'background:rgba(255,255,255,0.93);padding:6px 9px;border-radius:8px;'
@@ -211,13 +201,7 @@ with col_left:
         '&#9632; LST &amp; NO&#8322;: Google Earth Engine 2023<br>'
         '&#9632; Population: GHSL 2020<br>'
         '</div>'
-        '<div style="margin-top:14px;font-size:12px;color:#333;line-height:2">'
-        '<b>Dataset summary</b><br>'
-        '&#128205; 7 emotion topics<br>'
-        '&#128100; ~98,000 participatory responses<br>'
-        '&#128172; 25,605 comments analysed<br>'
-        '&#11042; 579 hexagonal grid cells<br>'
-        '</div>',
+        ,
         unsafe_allow_html=True
     )
 
@@ -281,7 +265,6 @@ with col_map:
                         max_width=300),
                     icon=folium.DivIcon(html="", icon_size=(0,0))
                 ).add_to(m)
-        m.get_root().html.add_child(folium.Element(EMOTION_LEG))
         st_folium(m, width=None, height=470, returned_objects=[])
 
     # ── COMMENTS MAP ──────────────────────────────────────────────────────────
@@ -307,7 +290,6 @@ with col_map:
                     max_width=270),
                 tooltip=row["sentiment_label"],
             ).add_to(cluster)
-        m.get_root().html.add_child(folium.Element(EMOTION_LEG))
         m.get_root().html.add_child(folium.Element(SENTIMENT_LEG))
         st_folium(m, width=None, height=450, returned_objects=[])
 
