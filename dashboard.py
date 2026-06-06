@@ -194,28 +194,33 @@ with col_right:
 
 # ── LEFT PANEL ─────────────────────────────────────────────────────────────────
 with col_left:
-    st.markdown(
-        '<div style="font-size:14px;font-weight:700;margin-bottom:8px">Welcome</div>'
-        '<div style="font-size:12px;color:#333;line-height:1.7">'
-        'This dashboard combines Prague residents\' emotional mapping responses '
-        'with Copernicus satellite data — NDVI, imperviousness, night lights, '
-        'land surface temperature and NO&#8322; — to reveal where urban quality '
-        'and lived experience align or conflict.'
-        '<br><br>'
-        'Select a <b>topic</b> on the right, explore the <b>bivariate hex map</b>, '
-        'switch to <b>comments</b> to read what residents say, '
-        'or use <b>compare</b> to swipe between two topics on one map.'
-        '</div>'
-        '<div style="margin-top:14px;font-size:12px;color:#333;line-height:2">'
-        '<b>Data sources</b><br>'
-        '&#9632; Emotional Map: emotionalmap.eu (P&#225;nek et al., 2021)<br>'
-        '&#9632; NDVI &amp; IMD: Copernicus / Sentinel-2 2023<br>'
-        '&#9632; LST &amp; NO&#8322;: Google Earth Engine 2023<br>'
-        '&#9632; Population: GHSL 2020<br>'
-        '</div>'
-        ,
-        unsafe_allow_html=True
-    )
+    st.markdown("""
+    <div style="font-size:14px;font-weight:700;margin-bottom:10px">Welcome</div>
+
+    <div style="font-size:12px;color:#333;line-height:1.8;
+                background:#f9f9f9;border-radius:8px;padding:10px 12px;
+                border-left:4px solid #1a1a2e;margin-bottom:10px">
+        This dashboard combines Prague residents' emotional mapping responses
+        with Copernicus satellite data — NDVI, imperviousness, night lights,
+        land surface temperature and NO&#8322; — to reveal where urban quality
+        and lived experience align or conflict.
+        <br><br>
+        Select a <b>topic</b> on the right, explore the <b>bivariate hex map</b>,
+        switch to <b>comments</b> to read what residents say, or use
+        <b>compare</b> to swipe between two topics on one map.
+    </div>
+
+    <div style="font-size:13px;font-weight:700;margin-bottom:6px">Data Sources</div>
+    <div style="font-size:12px;color:#333;line-height:2;
+                background:#f9f9f9;border-radius:8px;padding:10px 12px;
+                border-left:4px solid #1a878a">
+        &#9632;&nbsp; Emotional Map: emotionalmap.eu<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#666;font-size:11px">P&#225;nek et al., 2021</span><br>
+        &#9632;&nbsp; NDVI &amp; IMD: Copernicus / Sentinel-2 2023<br>
+        &#9632;&nbsp; LST &amp; NO&#8322;: Google Earth Engine 2023<br>
+        &#9632;&nbsp; Population: GHSL 2020
+    </div>
+    """, unsafe_allow_html=True)
 
 # ── MAP SECTION ────────────────────────────────────────────────────────────────
 with col_map:
