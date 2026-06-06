@@ -18,6 +18,9 @@ st.markdown("""
     div[data-testid="stSelectbox"] > div > div { font-size:12px; padding:2px 8px; }
     div[data-testid="stRadio"] label { font-size:12px; }
     p { margin:0; }
+    /* Make compare dropdown compact and flush with map */
+    div[data-testid="stSelectbox"] { margin-bottom: 0 !important; }
+    div[data-testid="stSelectbox"] label { font-size:11px !important; margin-bottom:1px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -219,11 +222,9 @@ with col_map:
                         horizontal=True, label_visibility="collapsed")
     with cmp_col:
         if mode == "⟺ Compare":
-            st.markdown('<span style="font-size:11px;font-weight:600">Compare with</span>',
-                        unsafe_allow_html=True)
-            sel_topic2 = st.selectbox("cmp",
+            sel_topic2 = st.selectbox("⟺",
                                       [t for t in list(TOPIC_EMOTION.keys()) if t != sel_topic],
-                                      label_visibility="collapsed", key="t2")
+                                      label_visibility="visible", key="t2")
         else:
             sel_topic2 = [t for t in list(TOPIC_EMOTION.keys()) if t != sel_topic][0]
 
