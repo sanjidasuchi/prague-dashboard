@@ -87,23 +87,23 @@ def highlight_fn(feat):
 def popup_html(gid, tdf, cbh):
     if gid not in tdf.index:
         return f"<b>{gid}</b><br>No data"
-    row   = tdf.loc[gid]
-    bv    = BIVAR_LABELS.get(str(row.get("bivar_class","")),"—")
-    x_lbl = row.get("x_label","Respondents")
-    y_lbl = row.get("y_label","Indicator")
-    x_val = row.get("x_val","—")
-    y_val = row.get("y_val","—")
-    cx    = cbh.get(gid,[])
+    row        = tdf.loc[gid]
+    bv         = BIVAR_LABELS.get(str(row.get("bivar_class","")),"—")
+    respondents= row.get("respondents","—")
+    y_lbl      = row.get("y_label","Indicator")
+    y_val      = row.get("y_val","—")
+    cx         = cbh.get(gid,[])
     c_html = "".join([
         f'<div style="font-size:11px;border-left:3px solid '
         f'{"#27AE60" if c["sentiment_label"]=="positive" else "#C0392B" if c["sentiment_label"]=="negative" else "#888"}'
         f';padding:2px 5px;margin:2px 0">{str(c["comment"])[:100]}</div>'
         for c in cx
     ]) or "<i style='font-size:10px;color:#888'>No comments</i>"
-    return (f'<div style="font-family:sans-serif;min-width:210px">'
+    return (f'<div style="font-family:sans-serif;min-width:220px">'
             f'<b style="font-size:13px">{gid}</b><hr style="margin:3px 0">'
-            f'<table style="font-size:11px;width:100%">'
-            f'<tr><td><b>Respondents</b></td><td>{x_val}</td></tr>'
+            f'<table style="font-size:12px;width:100%">'
+            f'<tr style="background:#f5f5f5"><td><b>&#128100; Respondents</b></td>'
+            f'<td><b>{respondents}</b></td></tr>'
             f'<tr><td><b>{y_lbl}</b></td><td>{y_val}</td></tr>'
             f'<tr><td><b>Bivariate class</b></td><td>{bv}</td></tr>'
             f'</table><hr style="margin:3px 0">'
@@ -200,9 +200,23 @@ with col_left:
         'land surface temperature and NO&#8322; — to reveal where urban quality '
         'and lived experience align or conflict.'
         '<br><br>'
-        'Select a <b>topic</b>, explore the <b>bivariate hex map</b>, '
+        'Select a <b>topic</b> on the right, explore the <b>bivariate hex map</b>, '
         'switch to <b>comments</b> to read what residents say, '
         'or use <b>compare</b> to swipe between two topics on one map.'
+        '</div>'
+        '<div style="margin-top:14px;font-size:12px;color:#333;line-height:2">'
+        '<b>Data sources</b><br>'
+        '&#9632; Emotional Map: emotionalmap.eu (P&#225;nek et al., 2021)<br>'
+        '&#9632; NDVI &amp; IMD: Copernicus / Sentinel-2 2023<br>'
+        '&#9632; LST &amp; NO&#8322;: Google Earth Engine 2023<br>'
+        '&#9632; Population: GHSL 2020<br>'
+        '</div>'
+        '<div style="margin-top:14px;font-size:12px;color:#333;line-height:2">'
+        '<b>Dataset summary</b><br>'
+        '&#128205; 7 emotion topics<br>'
+        '&#128100; ~98,000 participatory responses<br>'
+        '&#128172; 25,605 comments analysed<br>'
+        '&#11042; 579 hexagonal grid cells<br>'
         '</div>',
         unsafe_allow_html=True
     )

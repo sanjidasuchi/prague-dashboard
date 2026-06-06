@@ -149,8 +149,15 @@ wb["x_val"]   = wb["Point_Count"].round(1).astype(str)
 wb["y_val"]   = wb["Pop_mean"].round(1).astype(str)
 topics["Waste Bin"] = wb
 
+# Add respondents (Point_Count) to all topics
+for name, df in topics.items():
+    if "Point_Count" in df.columns:
+        df["respondents"] = df["Point_Count"].fillna(0).astype(int).astype(str)
+    else:
+        df["respondents"] = "—"
+
 # ── Combine all topics ─────────────────────────────────────────────────────────
-KEEP = ["GRID_ID","topic","x_label","y_label","x_val","y_val","bivar_class"]
+KEEP = ["GRID_ID","topic","x_label","y_label","x_val","y_val","bivar_class","respondents"]
 combined = []
 for name, df in topics.items():
     df = df.copy()
