@@ -184,13 +184,7 @@ with col_right:
         unsafe_allow_html=True)
     topics    = list(TOPIC_EMOTION.keys())
     sel_topic = st.radio("Topic", topics, label_visibility="collapsed")
-
-    st.markdown(
-        '<div style="font-size:13px;font-weight:700;margin-bottom:4px">Compare with</div>',
-        unsafe_allow_html=True)
-    sel_topic2 = st.radio("Topic2",
-                           [t for t in topics if t != sel_topic],
-                           label_visibility="collapsed", key="t2")
+    sel_topic2 = [t for t in topics if t != sel_topic][0]  # default, overridden in Compare mode
 
 # ── LEFT PANEL ─────────────────────────────────────────────────────────────────
 with col_left:
@@ -307,6 +301,16 @@ with col_map:
 
     # ── COMPARE MAP — swipe on one map via HTML ────────────────────────────────
     elif mode == "⟺ Compare":
+        # Compare topic selector — top right of map column
+        _, comp_col = st.columns([3, 1])
+        with comp_col:
+            st.markdown('<span style="font-size:11px;font-weight:600">Compare with</span>',
+                        unsafe_allow_html=True)
+            sel_topic2 = st.selectbox("Compare with",
+                                      [t for t in topics if t != sel_topic],
+                                      label_visibility="collapsed", key="t2")
+        topic_df2 = hex_topics[hex_topics["topic"] == sel_topic2].set_index("GRID_ID")
+
         m = folium.Map(location=[50.075,14.437], zoom_start=11,
                        tiles="CartoDB positron")
 
