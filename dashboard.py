@@ -109,6 +109,18 @@ def popup_html(gid, tdf, cbh):
             f'</table><hr style="margin:3px 0">'
             f'<b style="font-size:10px">Comments:</b>{c_html}</div>')
 
+# Emotion legend — bottom-left, Comments mode only
+EMOTION_LEG = (
+    '<div style="position:fixed;bottom:30px;left:10px;z-index:9999;'
+    'background:rgba(255,255,255,0.93);padding:6px 9px;border-radius:8px;'
+    'border:1px solid #ccc;font-size:11px;box-shadow:2px 2px 5px rgba(0,0,0,0.15)">'
+    '<b>Emotions</b><br>'
+    + "".join([f'<span style="display:inline-block;width:9px;height:9px;border-radius:50%;'
+               f'background:{c};margin-right:5px;vertical-align:middle"></span>{e}<br>'
+               for e,c in EMOTION_COLORS.items()])
+    + '</div>'
+)
+
 # Sentiment legend — bottom-right inside map
 SENTIMENT_LEG = (
     '<div style="position:fixed;bottom:30px;right:10px;z-index:9999;'
@@ -290,6 +302,7 @@ with col_map:
                     max_width=270),
                 tooltip=row["sentiment_label"],
             ).add_to(cluster)
+        m.get_root().html.add_child(folium.Element(EMOTION_LEG))
         m.get_root().html.add_child(folium.Element(SENTIMENT_LEG))
         st_folium(m, width=None, height=450, returned_objects=[])
 
