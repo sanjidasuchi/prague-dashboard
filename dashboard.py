@@ -266,30 +266,84 @@ def choropleth_hex_colors(tdf, topic_name):
 def highlight_fn(feat):
     return {"weight":2,"color":"#222","fillOpacity":0.9}
 
-def popup_html(gid, tdf, cbh):
+def _pct_label(p):
+    if p is None: return ""
+    if p >= 80:   return "Top 20%"
+    if p >= 60:   return "Above avg"
+    if p >= 40:   return "Average"
+    if p >= 20:   return "Below avg"
+    return "Bottom 20%"
+
+def popup_html(gid, tdf, cbh, pct_data=None):
     if gid not in tdf.index:
         return f"<b>{gid}</b><br>No data"
-    row        = tdf.loc[gid]
-    bv         = BIVAR_LABELS.get(str(row.get("bivar_class","")),"—")
-    respondents= row.get("respondents","—")
-    y_lbl      = row.get("y_label","Indicator")
-    y_val      = row.get("y_val","—")
-    cx         = cbh.get(gid,[])
+    row   = tdf.loc[gid]
+    bv    = BIVAR_LABELS.get(str(row.get("bivar_class", "")), "—")
+    y_lbl = row.get("y_label", "Indicator")
+    y_val = row.get("y_val", "—")
+    cx    = cbh.get(gid, [])
+
+    pct       = (pct_data or {}).get(gid, {})
+    x_pct     = pct.get("x_pct")
+    y_pct     = pct.get("y_pct")
+    resp_pct  = pct.get("resp_pct", 0)
+    resp      = pct.get("resp", row.get("respondents", "—"))
+
+    # one-line interpretation
+    interp = ""
+    if x_pct is not None:
+        act = _pct_label(x_pct).lower()
+        env = _pct_label(y_pct).lower() if y_pct is not None else "unknown"
+        interp = f"{act} activity &nbsp;·&nbsp; {env} {str(y_lbl).lower()}"
+
+    # respondent mini-bar
+    resp_bar = (
+        f'<div style="display:flex;align-items:center;gap:5px;margin:3px 0 5px">'
+        f'<div style="flex:1;background:#e8e8e8;border-radius:3px;height:6px">'
+        f'<div style="background:#1B3A5C;width:{resp_pct}%;height:6px;'
+        f'border-radius:3px;min-width:2px"></div></div>'
+        f'<span style="font-size:11px;font-weight:700;color:#1a1a2e;'
+        f'white-space:nowrap">{resp}</span></div>'
+    )
+
+    # percentile rank pills
+    def pill(label, val, color):
+        if val is None: return ""
+        return (f'<span style="display:inline-block;background:{color};color:#fff;'
+                f'font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;'
+                f'margin-right:4px;margin-bottom:3px">{label}: {_pct_label(val)}</span>')
+
+    pills = pill("Activity", x_pct, "#1B3A5C") + pill(y_lbl, y_pct, "#3b4994")
+
     c_html = "".join([
         f'<div style="font-size:11px;border-left:3px solid '
         f'{"#27AE60" if c["sentiment_label"]=="positive" else "#C0392B" if c["sentiment_label"]=="negative" else "#888"}'
-        f';padding:2px 5px;margin:2px 0">{str(c["comment"])[:100]}</div>'
+        f';padding:2px 6px;margin:2px 0;line-height:1.4">{str(c["comment"])[:100]}</div>'
         for c in cx
-    ]) or "<i style='font-size:10px;color:#888'>No comments</i>"
-    return (f'<div style="font-family:sans-serif;min-width:220px">'
-            f'<b style="font-size:13px">{gid}</b><hr style="margin:3px 0">'
-            f'<table style="font-size:12px;width:100%">'
-            f'<tr style="background:#f5f5f5"><td><b>&#128100; Respondents</b></td>'
-            f'<td><b>{respondents}</b></td></tr>'
-            f'<tr><td><b>{y_lbl}</b></td><td>{y_val}</td></tr>'
-            f'<tr><td><b>Bivariate class</b></td><td>{bv}</td></tr>'
-            f'</table><hr style="margin:3px 0">'
-            f'<b style="font-size:10px">Comments:</b>{c_html}</div>')
+    ]) or "<i style='font-size:10px;color:#aaa'>No comments</i>"
+
+    return (
+        f'<div style="font-family:sans-serif;min-width:230px;max-width:310px">'
+        f'<b style="font-size:13px;color:#1a1a2e">{gid}</b>'
+        f'<hr style="margin:4px 0;border-color:#eee">'
+        + (f'<div style="font-size:11px;color:#2c5f7a;background:#eef6fb;'
+           f'padding:5px 8px;border-radius:5px;margin-bottom:6px;line-height:1.5">'
+           f'&#128204;&nbsp;{interp}</div>' if interp else "")
+        + f'<div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;'
+          f'letter-spacing:.4px;margin-bottom:1px">Respondents</div>'
+        + resp_bar
+        + f'<div style="margin:4px 0 6px">{pills}</div>'
+        + f'<table style="font-size:11px;width:100%;border-collapse:collapse">'
+        + f'<tr><td style="color:#888;padding:2px 0">{y_lbl}</td>'
+          f'<td style="color:#333;font-weight:600">{y_val}</td></tr>'
+        + f'<tr><td style="color:#888;padding:2px 0">Bivariate class</td>'
+          f'<td style="color:#333">{bv}</td></tr>'
+        + f'</table>'
+        + f'<hr style="margin:5px 0;border-color:#eee">'
+        + f'<b style="font-size:10px;color:#666">Comments:</b>'
+        + c_html
+        + f'</div>'
+    )
 
 # Emotion legend — bottom-left, Comments mode only
 EMOTION_LEG = (
@@ -489,6 +543,23 @@ with col_map:
 
     # ── BIVARIATE MAP ──────────────────────────────────────────────────────────
     if mode == "🗺 Bivariate":
+        # Pre-compute percentile ranks for popup enrichment
+        _px = pd.to_numeric(topic_df["x_val"], errors="coerce")
+        _py = pd.to_numeric(topic_df["y_val"], errors="coerce")
+        _pr = pd.to_numeric(topic_df["respondents"], errors="coerce").fillna(0)
+        _max_r = max(_pr.max(), 1)
+        _xpct = _px.rank(pct=True, na_option="keep") * 100
+        _ypct = _py.rank(pct=True, na_option="keep") * 100
+        _pct_data = {
+            gid: {
+                "x_pct":    round(_xpct[gid]) if pd.notna(_xpct.get(gid, float("nan"))) else None,
+                "y_pct":    round(_ypct[gid]) if pd.notna(_ypct.get(gid, float("nan"))) else None,
+                "resp_pct": int(_pr.get(gid, 0) / _max_r * 100),
+                "resp":     int(_pr.get(gid, 0)),
+            }
+            for gid in topic_df.index
+        }
+
         m = folium.Map(location=[50.075, 14.437], zoom_start=11, tiles="CartoDB positron")
         folium.GeoJson(
             geojson,
@@ -504,8 +575,8 @@ with col_map:
                 folium.Marker(
                     location=c,
                     popup=folium.Popup(
-                        popup_html(gid, topic_df, comments_by_hex),
-                        max_width=300),
+                        popup_html(gid, topic_df, comments_by_hex, _pct_data),
+                        max_width=320),
                     icon=folium.DivIcon(html="", icon_size=(0,0))
                 ).add_to(m)
         m.get_root().html.add_child(folium.Element(
