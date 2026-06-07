@@ -13,14 +13,54 @@ st.set_page_config(page_title="Prague Mapped by People and Satellites",
 
 st.markdown("""
 <style>
-    .block-container { padding-top:0.8rem; padding-bottom:0rem; }
-    h1 { text-align:center; font-size:1.6rem; color:#1a1a2e; margin-bottom:0.4rem; }
-    div[data-testid="stSelectbox"] > div > div { font-size:12px; padding:2px 8px; }
-    div[data-testid="stRadio"] label { font-size:12px; }
-    p { margin:0; }
-    /* Make compare dropdown compact and flush with map */
-    div[data-testid="stSelectbox"] { margin-bottom: 0 !important; }
-    div[data-testid="stSelectbox"] label { font-size:11px !important; margin-bottom:1px; }
+    /* ── Single-screen layout ─────────────────────────────────── */
+    .block-container { padding: 0 !important; max-width: 100% !important; }
+    [data-testid="stMain"]             { overflow: hidden !important; }
+    [data-testid="stAppViewContainer"] { overflow: hidden !important; }
+
+    /* Dark title bar */
+    h1 {
+        background: #1a1a2e !important;
+        color: white !important;
+        font-size: 1.3rem !important;
+        text-align: center !important;
+        margin: 0 !important;
+        padding: 9px 0 !important;
+    }
+
+    /* Mode radio — slim tab strip */
+    div[data-testid="stRadio"] {
+        background: #f0f2f6;
+        padding: 4px 16px !important;
+        margin: 0 !important;
+        border-bottom: 1px solid #d0d0d0;
+    }
+    div[data-testid="stRadio"] > label { display: none !important; }
+    div[data-testid="stRadio"] label   { font-size: 12px !important; }
+
+    /* Panels get internal scroll via CSS */
+    [data-testid="stColumn"]:first-child {
+        border-right: 1px solid #e0e0e0;
+        overflow-y: auto !important;
+        background: #fff;
+        padding: 10px 10px !important;
+    }
+    [data-testid="stColumn"]:last-child {
+        border-left: 1px solid #e0e0e0;
+        overflow-y: auto !important;
+        background: #fff;
+        padding: 6px 8px !important;
+    }
+    [data-testid="stColumn"]:nth-child(2) {
+        overflow: hidden !important;
+        padding: 0 !important;
+    }
+
+    /* Compact widgets */
+    div[data-testid="stSelectbox"]       { margin-bottom: 2px !important; }
+    div[data-testid="stSelectbox"] label { font-size: 11px !important; }
+    div[data-testid="stRadio"] label     { font-size: 12px !important; }
+    p { margin: 0; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -217,9 +257,8 @@ with col_right:
         '</div>',
         unsafe_allow_html=True
     )
-    st.write("")
     st.markdown(
-        '<div style="font-size:13px;font-weight:700;margin-bottom:4px">Topic</div>',
+        '<div style="font-size:13px;font-weight:700;margin-top:10px;margin-bottom:4px">Topic</div>',
         unsafe_allow_html=True)
     topics    = list(TOPIC_EMOTION.keys())
     sel_topic = st.radio("Topic", topics, label_visibility="collapsed")
@@ -235,31 +274,30 @@ with col_right:
 # ── LEFT PANEL ─────────────────────────────────────────────────────────────────
 with col_left:
     st.markdown(
-        '<div style="display:flex;flex-direction:column;justify-content:space-between;height:460px">'
-
-        '<div>'
         '<div style="font-size:14px;font-weight:700;margin-bottom:8px">Welcome</div>'
         '<div style="font-size:11.5px;color:#333;line-height:1.75;text-align:justify">'
         'This dashboard combines Prague residents&#39; emotional mapping with '
         'Copernicus satellite data — NDVI, imperviousness, night lights, LST and NO&#8322; '
-        '— to reveal where urban quality and lived experience align or conflict.<br><br>'
-        'Select a topic on the right, explore the bivariate hex map, '
-        'switch to <b>Comments</b> to read what residents say, or use '
-        '<b>Compare</b> to swipe between two topics side by side.'
-        '</div>'
+        '— to reveal where urban quality and lived experience align or conflict.'
         '</div>'
 
-        '<div>'
-        '<div style="font-size:14px;font-weight:700;margin-bottom:4px">Data Sources</div>'
+        '<hr style="margin:12px 0;border-color:#e0e0e0">'
+        '<div style="font-size:13px;font-weight:700;margin-bottom:6px">How to Use</div>'
+        '<div style="font-size:11px;color:#444;line-height:1.8">'
+        '<b>🗺 Bivariate</b> — select a topic to see the hex map<br>'
+        '<b>💬 Comments</b> — read residents&#39; comments by location<br>'
+        '<b>⟺ Compare</b> — swipe to compare two topics side by side<br>'
+        'Click any hexagon for details and comments.'
+        '</div>'
+
+        '<hr style="margin:12px 0;border-color:#e0e0e0">'
+        '<div style="font-size:13px;font-weight:700;margin-bottom:4px">Data Sources</div>'
         '<div style="font-size:11px;color:#555;line-height:1.8">'
         'Emotional Map: emotionalmap.eu<br>'
         'P&#225;nek et al., 2021<br>'
         'Copernicus / Sentinel-2 2023<br>'
         'Google Earth Engine 2023<br>'
         'GHSL Population 2020'
-        '</div>'
-        '</div>'
-
         '</div>',
         unsafe_allow_html=True
     )
@@ -320,7 +358,7 @@ with col_map:
                         max_width=300),
                     icon=folium.DivIcon(html="", icon_size=(0,0))
                 ).add_to(m)
-        st_folium(m, width=None, height=470, returned_objects=[])
+        st_folium(m, width=None, height=660, returned_objects=[])
 
     # ── COMMENTS MAP ──────────────────────────────────────────────────────────
     elif mode == "💬 Comments":
@@ -346,7 +384,7 @@ with col_map:
             ).add_to(cluster)
         m.get_root().html.add_child(folium.Element(EMOTION_LEG))
         m.get_root().html.add_child(folium.Element(SENTIMENT_LEG))
-        st_folium(m, width=None, height=450, returned_objects=[])
+        st_folium(m, width=None, height=660, returned_objects=[])
 
     # ── COMPARE MAP — swipe on one map via HTML ────────────────────────────────
     elif mode == "⟺ Compare":
@@ -396,4 +434,4 @@ with col_map:
         with open(tmp_path, encoding="utf-8") as f:
             html_content = f.read()
         os.unlink(tmp_path)
-        components.html(html_content, height=480, scrolling=False)
+        components.html(html_content, height=660, scrolling=False)
