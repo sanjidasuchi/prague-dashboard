@@ -267,10 +267,17 @@ with col_left:
         unsafe_allow_html=True
     )
 
+    sel_age, sel_gender, sel_topic_comment = "All", "All", "All"
+
+# ── RIGHT PANEL ────────────────────────────────────────────────────────────────
+topics = list(TOPIC_EMOTION.keys())
+with col_right:
     if mode == "💬 Comments":
+        # ── Filters for Comments mode ──────────────────────────────────────────
+        sel_topic  = topics[0]
+        sel_topic2 = topics[1]
         st.markdown(
-            '<hr style="margin:8px 0;border-color:#e0e0e0">'
-            '<div style="font-size:13px;font-weight:700;margin-bottom:4px">Filters</div>',
+            '<div style="font-size:14px;font-weight:700;margin-bottom:8px">Filters</div>',
             unsafe_allow_html=True)
         st.markdown('<span style="font-size:11px;font-weight:600">Age Group</span>',
                     unsafe_allow_html=True)
@@ -285,69 +292,64 @@ with col_left:
         st.markdown('<span style="font-size:11px;font-weight:600">Topic</span>',
                     unsafe_allow_html=True)
         sel_topic_comment = st.selectbox(
-            "Topic",
-            ["All"] + list(EMOTION_COLORS.keys()),
+            "Topic", ["All"] + list(EMOTION_COLORS.keys()),
             label_visibility="collapsed", key="topic_c")
     else:
-        sel_age, sel_gender, sel_topic_comment = "All", "All", "All"
-
-# ── RIGHT PANEL ────────────────────────────────────────────────────────────────
-with col_right:
-    st.markdown(
-        '<div style="font-size:14px;font-weight:700;margin-bottom:6px">'
-        'Bivariate Legend</div>'
-        '<table style="border-collapse:collapse;font-size:12px">'
-        '<tr>'
-        '<td style="padding-right:4px">'
-        '<div style="writing-mode:vertical-rl;transform:rotate(180deg);'
-        'font-weight:600;font-size:11px;height:110px;'
-        'display:flex;align-items:center;justify-content:center">Activity ↑</div></td>'
-        '<td><table style="border-collapse:collapse">'
-        '<tr>'
-        '<td style="font-size:11px;padding:2px 4px;font-weight:600"></td>'
-        '<td style="font-size:11px;padding:2px 4px;text-align:center">Low</td>'
-        '<td style="font-size:11px;padding:2px 4px;text-align:center">Mid</td>'
-        '<td style="font-size:11px;padding:2px 4px;text-align:center">High</td>'
-        '</tr><tr>'
-        '<td style="font-size:11px;padding:2px 4px;font-weight:600">High</td>'
-        '<td style="background:#be64ac;width:30px;height:26px;border:1px solid #fff"></td>'
-        '<td style="background:#8c62aa;width:30px;height:26px;border:1px solid #fff"></td>'
-        '<td style="background:#3b4994;width:30px;height:26px;border:1px solid #fff"></td>'
-        '</tr><tr>'
-        '<td style="font-size:11px;padding:2px 4px;font-weight:600">Mid</td>'
-        '<td style="background:#dfb0d6;width:30px;height:26px;border:1px solid #fff"></td>'
-        '<td style="background:#a5b4c2;width:30px;height:26px;border:1px solid #fff"></td>'
-        '<td style="background:#5698b9;width:30px;height:26px;border:1px solid #fff"></td>'
-        '</tr><tr>'
-        '<td style="font-size:11px;padding:2px 4px;font-weight:600">Low</td>'
-        '<td style="background:#e8e8e8;width:30px;height:26px;border:1px solid #fff"></td>'
-        '<td style="background:#ace4e4;width:30px;height:26px;border:1px solid #fff"></td>'
-        '<td style="background:#5ac8c8;width:30px;height:26px;border:1px solid #fff"></td>'
-        '</tr><tr>'
-        '<td></td>'
-        '<td colspan="3" style="font-size:11px;font-weight:600;text-align:center;'
-        'padding-top:4px">Env. indicator &#8594;</td>'
-        '</tr></table></td></tr></table>'
-        '<div style="font-size:11px;color:#555;margin-top:6px;line-height:1.7">'
-        '<span style="color:#be64ac;font-size:14px">&#9632;</span> High demand, Low env<br>'
-        '<span style="color:#3b4994;font-size:14px">&#9632;</span> Low demand, High env<br>'
-        '<span style="color:#a5b4c2;font-size:14px">&#9632;</span> Average both'
-        '</div>',
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        '<div style="font-size:13px;font-weight:700;margin-top:10px;margin-bottom:4px">Topic</div>',
-        unsafe_allow_html=True)
-    topics    = list(TOPIC_EMOTION.keys())
-    sel_topic = st.radio("Topic", topics, label_visibility="collapsed")
-    sel_topic2 = [t for t in topics if t != sel_topic][0]
-    if mode == "⟺ Compare":
+        # ── Bivariate legend + Topic for Bivariate / Compare modes ────────────
         st.markdown(
-            '<div style="font-size:13px;font-weight:700;margin-top:8px;margin-bottom:4px">'
-            'Compare with</div>', unsafe_allow_html=True)
-        sel_topic2 = st.selectbox("Compare with",
-                                  [t for t in topics if t != sel_topic],
-                                  label_visibility="collapsed", key="t2")
+            '<div style="font-size:14px;font-weight:700;margin-bottom:6px">'
+            'Bivariate Legend</div>'
+            '<table style="border-collapse:collapse;font-size:12px">'
+            '<tr>'
+            '<td style="padding-right:4px">'
+            '<div style="writing-mode:vertical-rl;transform:rotate(180deg);'
+            'font-weight:600;font-size:11px;height:110px;'
+            'display:flex;align-items:center;justify-content:center">Activity ↑</div></td>'
+            '<td><table style="border-collapse:collapse">'
+            '<tr>'
+            '<td style="font-size:11px;padding:2px 4px;font-weight:600"></td>'
+            '<td style="font-size:11px;padding:2px 4px;text-align:center">Low</td>'
+            '<td style="font-size:11px;padding:2px 4px;text-align:center">Mid</td>'
+            '<td style="font-size:11px;padding:2px 4px;text-align:center">High</td>'
+            '</tr><tr>'
+            '<td style="font-size:11px;padding:2px 4px;font-weight:600">High</td>'
+            '<td style="background:#be64ac;width:30px;height:26px;border:1px solid #fff"></td>'
+            '<td style="background:#8c62aa;width:30px;height:26px;border:1px solid #fff"></td>'
+            '<td style="background:#3b4994;width:30px;height:26px;border:1px solid #fff"></td>'
+            '</tr><tr>'
+            '<td style="font-size:11px;padding:2px 4px;font-weight:600">Mid</td>'
+            '<td style="background:#dfb0d6;width:30px;height:26px;border:1px solid #fff"></td>'
+            '<td style="background:#a5b4c2;width:30px;height:26px;border:1px solid #fff"></td>'
+            '<td style="background:#5698b9;width:30px;height:26px;border:1px solid #fff"></td>'
+            '</tr><tr>'
+            '<td style="font-size:11px;padding:2px 4px;font-weight:600">Low</td>'
+            '<td style="background:#e8e8e8;width:30px;height:26px;border:1px solid #fff"></td>'
+            '<td style="background:#ace4e4;width:30px;height:26px;border:1px solid #fff"></td>'
+            '<td style="background:#5ac8c8;width:30px;height:26px;border:1px solid #fff"></td>'
+            '</tr><tr>'
+            '<td></td>'
+            '<td colspan="3" style="font-size:11px;font-weight:600;text-align:center;'
+            'padding-top:4px">Env. indicator &#8594;</td>'
+            '</tr></table></td></tr></table>'
+            '<div style="font-size:11px;color:#555;margin-top:6px;line-height:1.7">'
+            '<span style="color:#be64ac;font-size:14px">&#9632;</span> High demand, Low env<br>'
+            '<span style="color:#3b4994;font-size:14px">&#9632;</span> Low demand, High env<br>'
+            '<span style="color:#a5b4c2;font-size:14px">&#9632;</span> Average both'
+            '</div>',
+            unsafe_allow_html=True
+        )
+        st.markdown(
+            '<div style="font-size:13px;font-weight:700;margin-top:10px;margin-bottom:4px">Topic</div>',
+            unsafe_allow_html=True)
+        sel_topic  = st.radio("Topic", topics, label_visibility="collapsed")
+        sel_topic2 = [t for t in topics if t != sel_topic][0]
+        if mode == "⟺ Compare":
+            st.markdown(
+                '<div style="font-size:13px;font-weight:700;margin-top:8px;margin-bottom:4px">'
+                'Compare with</div>', unsafe_allow_html=True)
+            sel_topic2 = st.selectbox("Compare with",
+                                      [t for t in topics if t != sel_topic],
+                                      label_visibility="collapsed", key="t2")
 
 # ── MAP SECTION ────────────────────────────────────────────────────────────────
 with col_map:
