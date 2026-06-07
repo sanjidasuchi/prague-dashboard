@@ -18,20 +18,45 @@ st.markdown("""
     [data-testid="stDecoration"]   { display:none !important; }
     #MainMenu                      { display:none !important; }
     footer                         { display:none !important; }
-    .block-container { padding:0 !important; max-width:100% !important; }
 
-    /* ── Header row ── */
+    /* ── Flex column chain: fills viewport, no page scroll ── */
+    body { overflow:hidden !important; height:100vh !important; }
+
+    [data-testid="stAppViewContainer"] {
+        height:100vh !important;
+        display:flex !important; flex-direction:column !important;
+        overflow:hidden !important;
+    }
+    section[data-testid="stMain"], .main {
+        flex:1 !important; min-height:0 !important;
+        display:flex !important; flex-direction:column !important;
+        overflow:hidden !important;
+    }
+    .block-container {
+        flex:1 !important; min-height:0 !important;
+        padding:0 !important; max-width:100% !important;
+        display:flex !important; flex-direction:column !important;
+        overflow:hidden !important;
+    }
+    /* Streamlit's inner vertical block wrapper */
+    .block-container > div,
+    [data-testid="stVerticalBlock"],
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        flex:1 !important; min-height:0 !important;
+        display:flex !important; flex-direction:column !important;
+        overflow:hidden !important;
+    }
+
+    /* ── Header row: natural height, doesn't grow ── */
     [data-testid="stHorizontalBlock"]:first-of-type {
+        flex-shrink:0 !important;
         background:#d6eaf8 !important;
         border-bottom:3px solid #85b8d4 !important;
-        align-items:center !important;
-        margin:0 !important;
+        align-items:center !important; margin:0 !important;
     }
     [data-testid="stHorizontalBlock"]:first-of-type [data-testid="stColumn"] {
-        padding:12px 18px !important;
-        background:transparent !important;
+        padding:12px 18px !important; background:transparent !important;
     }
-    /* Right side of header — radio horizontal, right-aligned */
     [data-testid="stHorizontalBlock"]:first-of-type [data-testid="stColumn"]:last-child {
         border-left:1px solid #aac9e0 !important;
         display:flex !important; align-items:center !important;
@@ -44,35 +69,40 @@ st.markdown("""
         font-size:13px !important; font-weight:600 !important; color:#1a1a2e !important;
     }
 
-    /* ── Main layout (second stHorizontalBlock) ── */
+    /* ── Main layout: fills ALL remaining height ── */
     [data-testid="stHorizontalBlock"]:nth-of-type(2) {
-        align-items:stretch !important;
-        min-height:calc(100vh - 80px) !important;
+        flex:1 !important; min-height:0 !important;
+        overflow:hidden !important; align-items:stretch !important;
     }
+
+    /* Side panels — scroll internally */
     [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:first-child {
         background:#fff; border-right:1px solid #dde;
-        padding:12px 12px !important; overflow-y:auto;
-        height:calc(100vh - 80px); max-height:calc(100vh - 80px);
+        padding:12px 12px !important;
+        overflow-y:auto !important; overflow-x:hidden !important;
+        height:100% !important;
     }
     [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:last-child {
         background:#fff; border-left:1px solid #dde;
-        padding:8px 10px !important; overflow-y:auto;
-        height:calc(100vh - 80px); max-height:calc(100vh - 80px);
+        padding:8px 10px !important;
+        overflow-y:auto !important; overflow-x:hidden !important;
+        height:100% !important;
     }
+
+    /* Map column — clips, no scroll */
     [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) {
-        padding:0 !important; overflow:hidden;
-        height:calc(100vh - 80px); max-height:calc(100vh - 80px);
+        padding:0 !important; overflow:hidden !important; height:100% !important;
     }
-    /* Map iframe fills the column on every screen */
+
+    /* Map iframe: fill the column on any screen size */
     [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) iframe {
-        height:calc(100vh - 80px) !important;
-        min-height:380px !important;
+        height:100% !important; min-height:380px !important;
         width:100% !important; display:block !important;
     }
     [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) > div,
     [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) > div > div,
     [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) > div > div > div {
-        height:100% !important;
+        height:100% !important; min-height:0 !important;
     }
 
     /* Global widget styles */
