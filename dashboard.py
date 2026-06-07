@@ -18,27 +18,7 @@ st.markdown("""
     [data-testid="stMain"]             { overflow: hidden !important; }
     [data-testid="stAppViewContainer"] { overflow: hidden !important; }
 
-    /* Dark title bar */
-    h1 {
-        background: #1a1a2e !important;
-        color: white !important;
-        font-size: 1.3rem !important;
-        text-align: center !important;
-        margin: 0 !important;
-        padding: 9px 0 !important;
-    }
-
-    /* Mode radio — slim tab strip */
-    div[data-testid="stRadio"] {
-        background: #f0f2f6;
-        padding: 4px 16px !important;
-        margin: 0 !important;
-        border-bottom: 1px solid #d0d0d0;
-    }
-    div[data-testid="stRadio"] > label { display: none !important; }
-    div[data-testid="stRadio"] label   { font-size: 12px !important; }
-
-    /* Panels get internal scroll via CSS */
+    /* Panels: internal scroll */
     [data-testid="stColumn"]:first-child {
         border-right: 1px solid #e0e0e0;
         overflow-y: auto !important;
@@ -56,15 +36,45 @@ st.markdown("""
         padding: 0 !important;
     }
 
+    /* Mode radio inside map column — floating white pill */
+    [data-testid="stColumn"]:nth-child(2) div[data-testid="stRadio"] {
+        background: rgba(255,255,255,0.96) !important;
+        border-radius: 8px !important;
+        padding: 3px 10px !important;
+        margin: 6px 8px 0 8px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.18) !important;
+        display: inline-flex !important;
+        border-bottom: none !important;
+    }
+
+    /* Topic/compare radios in right panel — plain */
+    [data-testid="stColumn"]:last-child div[data-testid="stRadio"] {
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+    }
+
+    /* Hide label text on all radios */
+    div[data-testid="stRadio"] > label { display: none !important; }
+    div[data-testid="stRadio"] label   { font-size: 12px !important; }
+
     /* Compact widgets */
     div[data-testid="stSelectbox"]       { margin-bottom: 2px !important; }
     div[data-testid="stSelectbox"] label { font-size: 11px !important; }
-    div[data-testid="stRadio"] label     { font-size: 12px !important; }
     p { margin: 0; }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("# Prague Mapped by People and Satellites")
+# ── Title + subtitle bar ───────────────────────────────────────────────────────
+st.markdown(
+    '<div style="background:#1a1a2e;color:white;text-align:center;padding:10px 16px 7px">'
+    '<div style="font-size:1.35rem;font-weight:700">Prague Mapped by People and Satellites</div>'
+    '<div style="font-size:0.75rem;opacity:0.75;margin-top:2px">'
+    'Participatory emotional mapping × Copernicus satellite indicators</div>'
+    '</div>',
+    unsafe_allow_html=True
+)
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 BIVAR_COLORS = {
@@ -206,10 +216,6 @@ SENTIMENT_LEG = (
     '</div>'
 )
 
-# ── MODE SELECTOR (above columns, no gap above map) ───────────────────────────
-mode = st.radio("mode", ["🗺 Bivariate", "💬 Comments", "⟺ Compare"],
-                horizontal=True, label_visibility="collapsed")
-
 # ── LAYOUT ─────────────────────────────────────────────────────────────────────
 col_left, col_map, col_right = st.columns([1.2, 4.6, 1.8])
 
@@ -304,6 +310,8 @@ with col_left:
 
 # ── MAP SECTION ────────────────────────────────────────────────────────────────
 with col_map:
+    mode = st.radio("mode", ["🗺 Bivariate", "💬 Comments", "⟺ Compare"],
+                    horizontal=True, label_visibility="collapsed")
     topic_df  = hex_topics[hex_topics["topic"] == sel_topic].set_index("GRID_ID")
     topic_df2 = hex_topics[hex_topics["topic"] == sel_topic2].set_index("GRID_ID")
 
