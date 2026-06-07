@@ -277,13 +277,19 @@ with col_left:
         sel_age = st.selectbox("Age",
                                ["All"]+["0-19","20-29","30-39","40-49","50-59","60-69","70+"],
                                label_visibility="collapsed", key="age_c")
-        st.markdown('<span style="font-size:11px;font-weight:600">Gender</span>',
+        st.markdown('<span style="font-size:11px;font-weight:600">Sex</span>',
                     unsafe_allow_html=True)
         sel_gender = st.selectbox("Gender",
                                   ["All"]+sorted(comments["gender"].dropna().unique().tolist()),
                                   label_visibility="collapsed", key="gen_c")
+        st.markdown('<span style="font-size:11px;font-weight:600">Topic</span>',
+                    unsafe_allow_html=True)
+        sel_topic_comment = st.selectbox(
+            "Topic",
+            ["All"] + list(EMOTION_COLORS.keys()),
+            label_visibility="collapsed", key="topic_c")
     else:
-        sel_age, sel_gender = "All", "All"
+        sel_age, sel_gender, sel_topic_comment = "All", "All", "All"
 
 # ── RIGHT PANEL ────────────────────────────────────────────────────────────────
 with col_right:
@@ -351,6 +357,7 @@ with col_map:
     filt = comments.copy()
     if sel_age    != "All": filt = filt[filt["age"]    == sel_age]
     if sel_gender != "All": filt = filt[filt["gender"] == sel_gender]
+    if sel_topic_comment != "All": filt = filt[filt["emotion"] == sel_topic_comment]
 
     comments_by_hex = (
         filt.dropna(subset=["GRID_ID"])
