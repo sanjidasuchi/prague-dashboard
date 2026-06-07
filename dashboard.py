@@ -224,20 +224,31 @@ with col_right:
 # ── LEFT PANEL ─────────────────────────────────────────────────────────────────
 with col_left:
     st.markdown(
-        '<div style="font-size:14px;font-weight:700;margin-bottom:6px">Welcome</div>'
-        '<div style="font-size:11px;color:#333;line-height:1.6;text-align:justify">'
+        '<div style="display:flex;flex-direction:column;justify-content:space-between;height:460px">'
+
+        '<div>'
+        '<div style="font-size:14px;font-weight:700;margin-bottom:8px">Welcome</div>'
+        '<div style="font-size:11.5px;color:#333;line-height:1.75;text-align:justify">'
         'This dashboard combines Prague residents&#39; emotional mapping with '
         'Copernicus satellite data — NDVI, imperviousness, night lights, LST and NO&#8322; '
         '— to reveal where urban quality and lived experience align or conflict.<br><br>'
-        'Select a topic, explore the bivariate map, read comments, or swipe to compare two topics.'
+        'Select a topic on the right, explore the bivariate hex map, '
+        'switch to <b>Comments</b> to read what residents say, or use '
+        '<b>Compare</b> to swipe between two topics side by side.'
         '</div>'
-        '<div style="font-size:14px;font-weight:700;margin-top:10px;margin-bottom:4px">Data Sources</div>'
-        '<div style="font-size:11px;color:#555;line-height:1.7">'
+        '</div>'
+
+        '<div>'
+        '<div style="font-size:14px;font-weight:700;margin-bottom:4px">Data Sources</div>'
+        '<div style="font-size:11px;color:#555;line-height:1.8">'
         'Emotional Map: emotionalmap.eu<br>'
         'P&#225;nek et al., 2021<br>'
         'Copernicus / Sentinel-2 2023<br>'
         'Google Earth Engine 2023<br>'
         'GHSL Population 2020'
+        '</div>'
+        '</div>'
+
         '</div>',
         unsafe_allow_html=True
     )
