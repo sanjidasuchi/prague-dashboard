@@ -20,29 +20,31 @@ st.markdown("""
         border-right: 1px solid #e0e0e0;
         background: #fff;
         padding: 10px 10px !important;
+        overflow-y: auto;
     }
     /* Right panel */
     [data-testid="stColumn"]:last-child {
         border-left: 1px solid #e0e0e0;
         background: #fff;
         padding: 6px 8px !important;
+        overflow-y: auto;
     }
     /* Map column */
     [data-testid="stColumn"]:nth-child(2) { padding: 0 !important; }
 
-    /* Mode radio inside map column — floating white pill */
-    [data-testid="stColumn"]:nth-child(2) div[data-testid="stRadio"] {
-        background: rgba(255,255,255,0.96) !important;
-        border-radius: 8px !important;
-        padding: 3px 10px !important;
-        margin: 6px 8px 0 8px !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.18) !important;
-        display: inline-flex !important;
+    /* Mode strip radio (outside columns) */
+    div[data-testid="stRadio"] {
+        background: #f0f2f6;
+        padding: 4px 16px !important;
+        margin: 0 !important;
+        border-bottom: 1px solid #d0d0d0;
     }
-    /* Topic radio in right panel — plain */
+    /* Topic / compare radio inside right column — override to plain */
     [data-testid="stColumn"]:last-child div[data-testid="stRadio"] {
         background: transparent !important;
-        padding: 0 !important; margin: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border-bottom: none !important;
         box-shadow: none !important;
     }
 
@@ -54,14 +56,27 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ── Title + subtitle bar ───────────────────────────────────────────────────────
+# ── Header bar: title + subtitle (left) | Welcome (right) ─────────────────────
 st.markdown(
-    '<div style="background:#1a1a2e;color:white;text-align:center;padding:10px 16px 8px">'
-    '<div style="font-size:1.35rem;font-weight:700;letter-spacing:0.3px">'
+    '<div style="background:#1a1a2e;display:flex;justify-content:space-between;'
+    'align-items:flex-start;padding:10px 20px 9px;gap:30px">'
+
+    '<div style="flex:1">'
+    '<div style="font-size:1.25rem;font-weight:700;color:white;letter-spacing:0.2px">'
     'Prague Mapped by People and Satellites</div>'
-    '<div style="font-size:0.78rem;opacity:0.78;margin-top:3px">'
-    'How do Prague residents feel about their city — and what do satellites reveal about the same spaces?'
+    '<div style="font-size:0.73rem;color:rgba(255,255,255,0.72);margin-top:3px">'
+    'Participatory emotional mapping meets Copernicus satellite indicators — '
+    'NDVI, night lights, LST and NO&#8322;</div>'
     '</div>'
+
+    '<div style="flex:0 0 320px;text-align:right">'
+    '<div style="font-size:0.85rem;font-weight:700;color:white;margin-bottom:3px">Welcome!</div>'
+    '<div style="font-size:0.72rem;color:rgba(255,255,255,0.78);line-height:1.55;text-align:right">'
+    'Explore how Prague residents emotionally map their city alongside Copernicus '
+    'satellite data to reveal where urban quality and lived experience align or conflict.'
+    '</div>'
+    '</div>'
+
     '</div>',
     unsafe_allow_html=True
 )
@@ -206,11 +221,10 @@ SENTIMENT_LEG = (
     '</div>'
 )
 
-# ── Read mode from session state BEFORE columns so col_right can use it ────────
+# ── Mode strip (above columns; defines `mode` before col_right runs) ──────────
 _MODES = ["🗺 Bivariate", "💬 Comments", "⟺ Compare"]
-if "mode_radio" not in st.session_state:
-    st.session_state["mode_radio"] = _MODES[0]
-mode = st.session_state["mode_radio"]
+mode = st.radio("mode", _MODES, horizontal=True,
+                label_visibility="collapsed", key="mode_radio")
 
 # ── LAYOUT ─────────────────────────────────────────────────────────────────────
 col_left, col_map, col_right = st.columns([1.2, 4.6, 1.8])
@@ -276,14 +290,6 @@ with col_right:
 # ── LEFT PANEL ─────────────────────────────────────────────────────────────────
 with col_left:
     st.markdown(
-        '<div style="font-size:14px;font-weight:700;margin-bottom:8px">Welcome</div>'
-        '<div style="font-size:11.5px;color:#333;line-height:1.75;text-align:justify">'
-        'This dashboard combines Prague residents&#39; emotional mapping with '
-        'Copernicus satellite data — NDVI, imperviousness, night lights, LST and NO&#8322; '
-        '— to reveal where urban quality and lived experience align or conflict.'
-        '</div>'
-
-        '<hr style="margin:12px 0;border-color:#e0e0e0">'
         '<div style="font-size:13px;font-weight:700;margin-bottom:6px">How to Use</div>'
         '<div style="font-size:11px;color:#444;line-height:1.8">'
         '<b>🗺 Bivariate</b> — select a topic to see the hex map<br>'
@@ -306,9 +312,6 @@ with col_left:
 
 # ── MAP SECTION ────────────────────────────────────────────────────────────────
 with col_map:
-    mode = st.radio("mode", _MODES,
-                    horizontal=True, label_visibility="collapsed",
-                    key="mode_radio")
     topic_df  = hex_topics[hex_topics["topic"] == sel_topic].set_index("GRID_ID")
     topic_df2 = hex_topics[hex_topics["topic"] == sel_topic2].set_index("GRID_ID")
 
