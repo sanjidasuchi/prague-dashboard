@@ -429,13 +429,13 @@ with col_map:
 
         folium.GeoJson(
             geojson,
-            style_function=make_choropleth_style(topic_df, sel_topic),
+            style_function=make_style(topic_df),
             tooltip=folium.GeoJsonTooltip(
                 fields=["GRID_ID"], aliases=["Cell:"]),
         ).add_to(left_layer)
         folium.GeoJson(
             geojson,
-            style_function=make_choropleth_style(topic_df2, sel_topic2),
+            style_function=make_style(topic_df2),
             tooltip=folium.GeoJsonTooltip(
                 fields=["GRID_ID"], aliases=["Cell:"]),
         ).add_to(right_layer)
