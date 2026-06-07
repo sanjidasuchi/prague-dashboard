@@ -13,6 +13,13 @@ st.set_page_config(page_title="Prague Mapped by People and Satellites",
 
 st.markdown("""
 <style>
+    /* Hide Streamlit toolbar so our header is not cut off */
+    header[data-testid="stHeader"]          { display: none !important; }
+    [data-testid="stToolbar"]               { display: none !important; }
+    [data-testid="stDecoration"]            { display: none !important; }
+    #MainMenu                               { display: none !important; }
+    footer                                  { display: none !important; }
+
     .block-container { padding: 0 !important; max-width: 100% !important; }
 
     /* Left panel */
