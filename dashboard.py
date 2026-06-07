@@ -1,6 +1,7 @@
 import os, json, tempfile
 import pandas as pd
 from scipy import stats
+import plotly.graph_objects as go
 import folium
 from folium.plugins import MarkerCluster, SideBySideLayers
 import streamlit as st
@@ -447,33 +448,75 @@ with col_left:
         '<div style="font-size:13px;font-weight:700;margin-bottom:4px">View Mode</div>',
         unsafe_allow_html=True)
     mode = st.selectbox("View Mode", _MODES, label_visibility="collapsed", key="mode_radio")
-    # ── Insights callout (topic-aware via session state) ──────────────────────
-    _cur_topic  = st.session_state.get("topic_bv", topics[0])
-    _ins_list   = _insights_all.get(_cur_topic, [])
-    _ins_color  = TOPIC_BASE_COLORS.get(_cur_topic, "#2c5f7a")
-    _ins_html   = (
-        f'<div style="font-size:12px;font-weight:700;color:#1a1a2e;'
-        f'margin-bottom:6px">&#128270; {_cur_topic}</div>'
-    )
-    for _ins in _ins_list:
-        _ins_html += (
-            f'<div style="border-left:3px solid {_ins_color};'
-            f'background:#f7f9fc;padding:7px 9px;border-radius:0 6px 6px 0;'
-            f'margin-bottom:6px;font-size:11px;color:#1a1a2e;line-height:1.6">'
-            f'{_ins}</div>'
+    # ── Insight scatter chart (topic-aware via session state) ─────────────────
+    _cur_topic = st.session_state.get("topic_bv", topics[0])
+    _ins_color = TOPIC_BASE_COLORS.get(_cur_topic, "#2c5f7a")
+    _tdf_left  = hex_topics[hex_topics["topic"] == _cur_topic]
+    _xp = pd.to_numeric(_tdf_left["y_val"], errors="coerce")  # env → x-axis
+    _yp = pd.to_numeric(_tdf_left["x_val"], errors="coerce")  # activity → y-axis
+    _bvp = _tdf_left["bivar_class"].astype(str)
+    _ylbl = "Indicator"
+    if "y_label" in _tdf_left.columns:
+        _yl = _tdf_left["y_label"].dropna()
+        if len(_yl) > 0:
+            _ylbl = str(_yl.iloc[0])
+
+    _dot_colors = [BIVAR_COLORS.get(b, "#aaa") for b in _bvp]
+    _fig = go.Figure()
+    _fig.add_trace(go.Scatter(
+        x=_xp, y=_yp,
+        mode="markers",
+        marker=dict(color=_dot_colors, size=5, opacity=0.72,
+                    line=dict(width=0)),
+        showlegend=False,
+        hovertemplate=f"{_ylbl}: %{{x:.2f}}<br>Activity: %{{y:.2f}}<extra></extra>",
+    ))
+    _sp = _spearman.get(_cur_topic, {})
+    if _sp.get("r") is not None:
+        _fig.add_annotation(
+            x=0.97, y=0.97, xref="paper", yref="paper",
+            text=f"r = {_sp['r']:+.2f}",
+            showarrow=False, font=dict(size=11, color="#333"),
+            bgcolor="rgba(255,255,255,0.85)", borderpad=3,
         )
+    _fig.update_layout(
+        height=165,
+        margin=dict(l=32, r=8, t=8, b=32),
+        plot_bgcolor="#f7f9fc",
+        paper_bgcolor="rgba(0,0,0,0)",
+        xaxis=dict(title=dict(text=_ylbl, font=dict(size=9)),
+                   tickfont=dict(size=8), gridcolor="#e4e4e4"),
+        yaxis=dict(title=dict(text="Activity", font=dict(size=9)),
+                   tickfont=dict(size=8), gridcolor="#e4e4e4"),
+    )
+
     st.markdown(
         '<hr style="margin:8px 0;border-color:#e0e0e0">'
-        + _ins_html
-        + '<hr style="margin:8px 0;border-color:#e0e0e0">'
-        '<div style="font-size:11px;font-weight:700;color:#555;margin-bottom:3px">'
+        f'<div style="font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:2px">'
+        f'&#128270; {_cur_topic}</div>',
+        unsafe_allow_html=True)
+    st.plotly_chart(_fig, use_container_width=True,
+                    config={"displayModeBar": False})
+
+    # one-line text insight below the chart
+    _ins_list = _insights_all.get(_cur_topic, [])
+    if _ins_list:
+        st.markdown(
+            f'<div style="border-left:3px solid {_ins_color};background:#f7f9fc;'
+            f'padding:6px 9px;border-radius:0 6px 6px 0;'
+            f'font-size:10px;color:#1a1a2e;line-height:1.6">'
+            f'{_ins_list[0]}</div>',
+            unsafe_allow_html=True)
+
+    st.markdown(
+        '<hr style="margin:8px 0;border-color:#e0e0e0">'
+        '<div style="font-size:10px;font-weight:700;color:#888;margin-bottom:2px">'
         'Data Sources</div>'
-        '<div style="font-size:10px;color:#888;line-height:1.8">'
+        '<div style="font-size:10px;color:#aaa;line-height:1.7">'
         'Emotional Map: emotionalmap.eu<br>'
         'P&#225;nek et al., 2021<br>'
         'Copernicus / Sentinel-2 2023<br>'
-        'Google Earth Engine 2023<br>'
-        'GHSL Population 2020'
+        'Google Earth Engine 2023'
         '</div>',
         unsafe_allow_html=True
     )
