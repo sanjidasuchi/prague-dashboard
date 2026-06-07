@@ -465,4 +465,27 @@ with col_map:
         with open(tmp_path, encoding="utf-8") as f:
             html_content = f.read()
         os.unlink(tmp_path)
+
+        # Inject JS to place the swipe divider exactly at 50% on load
+        center_js = """
+<script>
+(function(){
+    function centerSwipe(){
+        var range = document.querySelector('.leaflet-sbs-range');
+        var container = document.querySelector('.leaflet-container');
+        if(range && container){
+            var w = container.offsetWidth;
+            range.setAttribute('max', w);
+            range.value = Math.round(w / 2);
+            range.dispatchEvent(new Event('input', {bubbles:true}));
+        }
+    }
+    if(document.readyState === 'complete'){
+        setTimeout(centerSwipe, 300);
+    } else {
+        window.addEventListener('load', function(){ setTimeout(centerSwipe, 300); });
+    }
+})();
+</script>"""
+        html_content = html_content.replace('</body>', center_js + '\n</body>')
         components.html(html_content, height=900, scrolling=False)
