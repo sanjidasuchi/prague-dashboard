@@ -192,6 +192,54 @@ def compute_spearman_multi(_hex_topics):
 
 _spearman_multi = compute_spearman_multi(hex_topics)
 
+def _r_interpret(r, topic, indicator):
+    if r is None:
+        return ""
+    strength = "strong" if abs(r) >= 0.5 else "moderate" if abs(r) >= 0.3 else "weak"
+    _topic_desc = {
+        "Safety":          "higher safety concern",
+        "Proudness":       "stronger place pride",
+        "Free Time":       "more free time activity",
+        "Green Space":     "greater green space demand",
+        "Need to Change":  "higher need for change",
+        "Traffic Hazard":  "higher traffic hazard perception",
+        "Waste Bin":       "more waste/cleanliness concern",
+    }
+    _ind_pos = {
+        "ndvi":        "more vegetation",
+        "night":       "more artificial light at night",
+        "light":       "more artificial light at night",
+        "lst":         "higher surface temperature",
+        "temp":        "higher surface temperature",
+        "heat":        "higher surface temperature",
+        "no2":         "higher air pollution (NO₂)",
+        "nitrogen":    "higher air pollution (NO₂)",
+        "water":       "greater distance from water",
+        "distance":    "greater distance from water",
+    }
+    _ind_neg = {
+        "ndvi":        "less vegetation",
+        "night":       "less artificial light",
+        "light":       "less artificial light",
+        "lst":         "lower surface temperature",
+        "temp":        "lower surface temperature",
+        "heat":        "lower surface temperature",
+        "no2":         "lower air pollution (NO₂)",
+        "nitrogen":    "lower air pollution (NO₂)",
+        "water":       "closer proximity to water",
+        "distance":    "closer proximity to water",
+    }
+    t_desc = _topic_desc.get(topic, f"higher {topic.lower()} activity")
+    ind_lower = indicator.lower()
+    env_desc = None
+    for k in (_ind_pos if r > 0 else _ind_neg):
+        if k in ind_lower:
+            env_desc = (_ind_pos if r > 0 else _ind_neg)[k]
+            break
+    if env_desc:
+        return f"{strength.capitalize()} link: hexagons with {t_desc} tend to have {env_desc}."
+    return f"{strength.capitalize()} {'positive' if r > 0 else 'negative'} correlation between {topic} and {indicator}."
+
 # ── Pre-compute hex bounds for fit_bounds ─────────────────────────────────────
 _all_coords = []
 for _feat in geojson["features"]:
@@ -532,7 +580,10 @@ with col_right:
                 f'<div style="background:{bar_color};width:{bar_w}%;height:5px;border-radius:3px"></div></div>'
                 f'<div style="font-size:11px;color:#555">p {p_str} &nbsp;·&nbsp; '
                 f'<span style="color:{sig_color};font-weight:600">{sig_label}</span></div>'
-                f'<div style="font-size:10px;color:#888;margin-top:2px">n = {sp["n"]} hexagons</div>',
+                f'<div style="font-size:10px;color:#888;margin-top:2px">n = {sp["n"]} hexagons</div>'
+                f'<div style="font-size:10px;color:#2c5f7a;margin-top:5px;line-height:1.4;'
+                f'background:#f0f7fb;border-left:3px solid #85b8d4;padding:4px 6px;border-radius:0 4px 4px 0">'
+                f'{_r_interpret(r_val, sel_topic, _ind_lbl)}</div>',
                 unsafe_allow_html=True)
         if mode == "⟺ Compare":
             sp2 = _spearman.get(sel_topic2, {})
@@ -552,12 +603,13 @@ with col_right:
             lbls   = list(sp_multi.keys())
             rs     = [sp_multi[l]["r"] for l in lbls]
             ps     = [sp_multi[l]["p"] for l in lbls]
-            colors = ["#27AE60" if r >= 0 else "#E74C3C" for r in rs]
-            stars  = ["***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else "ns" for p in ps]
-            texts  = [f"r={r:+.3f}<br>{s}" for r, s in zip(rs, stars)]
-            ypad   = 0.12
-            ymin   = min(min(rs) - ypad, -0.25)
-            ymax   = max(max(rs) + ypad,  0.25)
+            colors  = ["#27AE60" if r >= 0 else "#E74C3C" for r in rs]
+            stars   = ["***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else "ns" for p in ps]
+            texts   = [f"r={r:+.3f}<br>{s}" for r, s in zip(rs, stars)]
+            hovers  = [_r_interpret(r, topic, lbl) for r, lbl in zip(rs, lbls)]
+            ypad    = 0.12
+            ymin    = min(min(rs) - ypad, -0.25)
+            ymax    = max(max(rs) + ypad,  0.25)
             fig = go.Figure(go.Bar(
                 x=lbls, y=rs,
                 width=0.35,
@@ -566,6 +618,8 @@ with col_right:
                 text=texts, textposition="outside",
                 textfont_size=8,
                 cliponaxis=False,
+                customdata=hovers,
+                hovertemplate="<b>%{x}</b><br>r = %{y:+.3f}<br><br>%{customdata}<extra></extra>",
             ))
             fig.update_layout(
                 title_text=topic,
