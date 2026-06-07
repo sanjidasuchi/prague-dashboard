@@ -853,69 +853,62 @@ document.addEventListener('touchend',function(){{ drag=false; map.dragging.enabl
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-html,body{{margin:0;padding:0;height:100%;background:#e8e8e8;}}
+html,body{{margin:0;padding:0;height:100%;background:#ddd;overflow:hidden;}}
 #grid{{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
-       height:100%;gap:3px;padding:3px;box-sizing:border-box;}}
-.cell{{position:relative;overflow:hidden;border-radius:4px;}}
-.cell-map{{height:100%;width:100%;}}
+       width:100%;height:100%;gap:3px;padding:3px;box-sizing:border-box;}}
+.cell{{position:relative;min-height:200px;}}
+.cell-map{{position:absolute;inset:0;}}
 .cell-lbl{{position:absolute;top:8px;left:8px;z-index:999;
-           background:rgba(255,255,255,0.92);padding:3px 9px;border-radius:12px;
+           background:rgba(255,255,255,0.93);padding:3px 10px;border-radius:12px;
            font-size:11px;font-weight:700;font-family:sans-serif;color:#1a1a2e;
-           pointer-events:none;}}
+           pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.15);}}
 </style></head>
 <body>
 <div id="grid">
-  <div class="cell"><div id="m0" class="cell-map"></div>
-    <div class="cell-lbl">{_lbls[0]}</div></div>
-  <div class="cell"><div id="m1" class="cell-map"></div>
-    <div class="cell-lbl">{_lbls[1]}</div></div>
-  <div class="cell"><div id="m2" class="cell-map"></div>
-    <div class="cell-lbl">{_lbls[2]}</div></div>
-  <div class="cell"><div id="m3" class="cell-map"></div>
-    <div class="cell-lbl">{_lbls[3]}</div></div>
+  <div class="cell"><div id="m0" class="cell-map"></div><div class="cell-lbl">{_lbls[0]}</div></div>
+  <div class="cell"><div id="m1" class="cell-map"></div><div class="cell-lbl">{_lbls[1]}</div></div>
+  <div class="cell"><div id="m2" class="cell-map"></div><div class="cell-lbl">{_lbls[2]}</div></div>
+  <div class="cell"><div id="m3" class="cell-map"></div><div class="cell-lbl">{_lbls[3]}</div></div>
 </div>
 <script>
 var GJ = {_gj_js};
 var CM = [{_c_js[0]},{_c_js[1]},{_c_js[2]},{_c_js[3]}];
-var LEGS = [{_leg_js[0]},{_leg_js[1]},{_leg_js[2]},{_leg_js[3]}];
-
 var maps = [];
 var syncing = false;
 
 for (var i = 0; i < 4; i++) {{
-  var m = L.map('m'+i, {{zoomControl: i===0, attributionControl: false}})
-           .setView([50.075, 14.437], 10);
+  var m = L.map('m'+i, {{zoomControl:false,attributionControl:false}})
+           .setView([50.075,14.437],10);
   L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
     {{maxZoom:19}}).addTo(m);
-  (function(map, cm, leg) {{
-    L.geoJSON(GJ, {{
-      style: function(f) {{
-        return {{fillColor: cm[f.properties.GRID_ID] || '#ddd',
-                fillOpacity: 0.82, color:'#666', weight:0.4}};
+  (function(map,cm){{
+    L.geoJSON(GJ,{{
+      style:function(f){{
+        return {{fillColor:cm[f.properties.GRID_ID]||'#ddd',
+                fillOpacity:0.82,color:'#777',weight:0.4}};
       }},
-      onEachFeature: function(f, layer) {{
-        var gid = f.properties.GRID_ID || '';
-        layer.bindTooltip(gid, {{sticky:true, className:'leaflet-tooltip-sm'}});
+      onEachFeature:function(f,layer){{
+        layer.bindTooltip(f.properties.GRID_ID||'',{{sticky:true}});
       }}
     }}).addTo(map);
-    var div = L.DomUtil.create('div');
-    div.innerHTML = leg;
-    map.getContainer().appendChild(div.firstChild);
-  }})(m, CM[i], LEGS[i]);
+  }})(m,CM[i]);
   maps.push(m);
 }}
 
-// Synchronise pan + zoom
-maps.forEach(function(m, idx) {{
-  m.on('moveend', function() {{
-    if (syncing) return;
-    syncing = true;
-    var c = m.getCenter(), z = m.getZoom();
-    maps.forEach(function(o, j) {{
-      if (j !== idx) o.setView(c, z, {{animate:false}});
-    }});
-    syncing = false;
+// Sync pan/zoom across all four maps
+maps.forEach(function(m,idx){{
+  m.on('moveend',function(){{
+    if(syncing)return;
+    syncing=true;
+    var c=m.getCenter(),z=m.getZoom();
+    maps.forEach(function(o,j){{if(j!==idx)o.setView(c,z,{{animate:false}});}});
+    syncing=false;
   }});
+}});
+
+// Leaflet initialises before CSS sizes the grid cells — invalidate repeatedly
+[100,400,900].forEach(function(d){{
+  setTimeout(function(){{maps.forEach(function(m){{m.invalidateSize();}});}},d);
 }});
 </script>
 </body></html>"""
