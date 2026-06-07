@@ -84,6 +84,36 @@ def make_style(tdf):
         return {"fillColor":color,"color":"#666","weight":0.5,"fillOpacity":0.75}
     return fn
 
+TOPIC_BASE_COLORS = {
+    "Safety":"#1B3A5C","Proudness":"#E87D1E","Free Time":"#1A878A",
+    "Green Space":"#27AE60","Need to Change":"#8E44AD",
+    "Traffic Hazard":"#C0392B","Waste Bin":"#7F8C8D",
+}
+
+def topic_gradient(topic_name, n=5):
+    """Return n shades from light → topic signature color."""
+    base = TOPIC_BASE_COLORS.get(topic_name, "#888888")
+    r,g,b = int(base[1:3],16), int(base[3:5],16), int(base[5:7],16)
+    return [f"#{int(255+(r-255)*(i+1)/n):02x}"
+            f"{int(255+(g-255)*(i+1)/n):02x}"
+            f"{int(255+(b-255)*(i+1)/n):02x}" for i in range(n)]
+
+def make_choropleth_style(tdf, topic_name):
+    """Color by respondent count quantile using topic's own color gradient."""
+    shades = topic_gradient(topic_name)
+    vals   = pd.to_numeric(tdf["x_val"], errors="coerce").fillna(0)
+    try:
+        qs = pd.qcut(vals.rank(method="first"), q=5,
+                     labels=[0,1,2,3,4], duplicates="drop")
+    except Exception:
+        qs = pd.Series(2, index=tdf.index)
+    color_map = {gid: shades[int(q)] for gid, q in qs.items()}
+    def fn(feat):
+        gid = feat["properties"].get("GRID_ID","")
+        return {"fillColor": color_map.get(gid,"#eeeeee"),
+                "color":"#666","weight":0.5,"fillOpacity":0.8}
+    return fn
+
 def highlight_fn(feat):
     return {"weight":2,"color":"#222","fillOpacity":0.9}
 
@@ -323,13 +353,13 @@ with col_map:
 
         folium.GeoJson(
             geojson,
-            style_function=make_style(topic_df),
+            style_function=make_choropleth_style(topic_df, sel_topic),
             tooltip=folium.GeoJsonTooltip(
                 fields=["GRID_ID"], aliases=["Cell:"]),
         ).add_to(left_layer)
         folium.GeoJson(
             geojson,
-            style_function=make_style(topic_df2),
+            style_function=make_choropleth_style(topic_df2, sel_topic2),
             tooltip=folium.GeoJsonTooltip(
                 fields=["GRID_ID"], aliases=["Cell:"]),
         ).add_to(right_layer)
