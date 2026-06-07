@@ -489,7 +489,7 @@ with col_map:
 
     # ── BIVARIATE MAP ──────────────────────────────────────────────────────────
     if mode == "🗺 Bivariate":
-        m = folium.Map(location=[50.075, 14.437], zoom_start=11, tiles="CartoDB positron")
+        m = folium.Map(location=[51, 14.44], zoom_start=11, tiles="CartoDB positron")
         folium.GeoJson(
             geojson,
             style_function=make_style(topic_df),
@@ -512,7 +512,7 @@ with col_map:
 
     # ── COMMENTS MAP ──────────────────────────────────────────────────────────
     elif mode == "💬 Comments":
-        m = folium.Map(location=[50.075, 14.437], zoom_start=11, tiles="CartoDB positron")
+        m = folium.Map(location=[51, 14.44], zoom_start=11, tiles="CartoDB positron")
         cluster = MarkerCluster(max_cluster_radius=50).add_to(m)
         sample  = filt.sample(min(len(filt), 3000), random_state=42)
         for _, row in sample.iterrows():
@@ -608,7 +608,7 @@ var RC = {rc_js};
   h.style.top  = h2+'px';
 }})();
 
-var map = L.map('map',{{zoomControl:true}}).setView([50.075,14.437],11);
+var map = L.map('map',{{zoomControl:true}}).setView([51,14.44],11);
 L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
   {{attribution:'&copy; CartoDB',maxZoom:19}}).addTo(map);
 
