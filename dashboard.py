@@ -181,6 +181,20 @@ def make_choropleth_style(tdf, topic_name):
                 "color":"#555","weight":0.4}
     return fn
 
+def choropleth_hex_colors(tdf, topic_name):
+    """Returns {GRID_ID: actual_hex_color} blending white → topic base color by activity quintile."""
+    base = TOPIC_BASE_COLORS.get(topic_name, "#888888")
+    r0,g0,b0 = int(base[1:3],16), int(base[3:5],16), int(base[5:7],16)
+    weights = [0.12, 0.28, 0.50, 0.72, 0.92]
+    shades = [f"#{int(255+(r0-255)*w):02x}{int(255+(g0-255)*w):02x}{int(255+(b0-255)*w):02x}"
+              for w in weights]
+    vals = pd.to_numeric(tdf["x_val"], errors="coerce").fillna(0)
+    try:
+        qs = pd.qcut(vals.rank(method="first"), q=5, labels=[0,1,2,3,4], duplicates="drop")
+    except Exception:
+        qs = pd.Series(2, index=tdf.index)
+    return {gid: shades[int(q)] for gid, q in qs.items()}
+
 def highlight_fn(feat):
     return {"weight":2,"color":"#222","fillOpacity":0.9}
 
@@ -377,7 +391,7 @@ with col_map:
                        tiles="CartoDB positron")
         folium.GeoJson(
             geojson,
-            style_function=make_style(topic_df),
+            style_function=make_choropleth_style(topic_df, sel_topic),
             highlight_function=highlight_fn,
             tooltip=folium.GeoJsonTooltip(
                 fields=["GRID_ID"], aliases=["Cell:"]),
@@ -423,14 +437,14 @@ with col_map:
 
     # ── COMPARE MAP — custom swipe, no SideBySideLayers plugin ───────────────────
     elif mode == "⟺ Compare":
-        # Build per-hexagon color dicts for both topics
+        # Build per-hexagon color dicts using each topic's signature color
+        lc_hex = choropleth_hex_colors(topic_df,  sel_topic)
+        rc_hex = choropleth_hex_colors(topic_df2, sel_topic2)
         lc_map = {feat["properties"].get("GRID_ID",""):
-                  (topic_df.loc[feat["properties"]["GRID_ID"], "color"]
-                   if feat["properties"].get("GRID_ID","") in topic_df.index else "#dddddd")
+                  lc_hex.get(feat["properties"].get("GRID_ID",""), "#dddddd")
                   for feat in geojson["features"]}
         rc_map = {feat["properties"].get("GRID_ID",""):
-                  (topic_df2.loc[feat["properties"]["GRID_ID"], "color"]
-                   if feat["properties"].get("GRID_ID","") in topic_df2.index else "#dddddd")
+                  rc_hex.get(feat["properties"].get("GRID_ID",""), "#dddddd")
                   for feat in geojson["features"]}
 
         lc_js  = json.dumps(lc_map)
@@ -449,9 +463,11 @@ with col_map:
 html,body{{margin:0;padding:0;height:100%;overflow:hidden;}}
 #map{{height:100%;width:100%;position:relative;}}
 #divider{{position:absolute;top:0;bottom:0;width:4px;
+          left:calc(50% - 2px);
           background:#fff;box-shadow:0 0 8px rgba(0,0,0,.6);
           z-index:1000;cursor:ew-resize;}}
 #handle{{position:absolute;
+         left:50%;top:50%;
          transform:translate(-50%,-50%);
          width:46px;height:46px;background:#fff;border-radius:50%;
          box-shadow:0 2px 10px rgba(0,0,0,.4);
@@ -477,6 +493,20 @@ html,body{{margin:0;padding:0;height:100%;overflow:hidden;}}
 var GJ = {gj_js};
 var LC = {lc_js};
 var RC = {rc_js};
+
+/* Position divider + handle at true center immediately, before Leaflet loads */
+(function(){{
+  var visH;
+  try {{ visH = window.frameElement ? window.frameElement.offsetHeight : window.innerHeight; }}
+  catch(e) {{ visH = window.innerHeight; }}
+  var w2 = Math.round(window.innerWidth / 2);
+  var h2 = Math.round(visH / 2);
+  var d  = document.getElementById('divider');
+  var h  = document.getElementById('handle');
+  d.style.left = (w2-2)+'px';
+  h.style.left = w2+'px';
+  h.style.top  = h2+'px';
+}})();
 
 var map = L.map('map',{{zoomControl:true}}).setView([50.075,14.437],11);
 L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
