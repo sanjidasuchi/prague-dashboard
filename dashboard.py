@@ -175,6 +175,25 @@ def compute_spearman(_hex_topics):
 
 _spearman = compute_spearman(hex_topics)
 
+@st.cache_data
+def compute_distribution(_hex_topics):
+    out = {}
+    qlabels = ["Q1","Q2","Q3","Q4","Q5"]
+    for topic, tdf in _hex_topics.groupby("topic"):
+        vals = pd.to_numeric(tdf["x_val"], errors="coerce").dropna()
+        if len(vals) >= 5:
+            try:
+                qcut = pd.qcut(vals.rank(method="first"), q=5,
+                               labels=qlabels, duplicates="drop")
+                out[topic] = qcut.value_counts().reindex(qlabels, fill_value=0)
+            except Exception:
+                out[topic] = None
+        else:
+            out[topic] = None
+    return out
+
+_distributions = compute_distribution(hex_topics)
+
 # ── Pre-compute hex bounds for fit_bounds ─────────────────────────────────────
 _all_coords = []
 for _feat in geojson["features"]:
@@ -436,6 +455,40 @@ with col_right:
                                       [t for t in topics if t != sel_topic],
                                       label_visibility="collapsed", key="t2")
 
+        # ── Mini distribution chart ────────────────────────────────────────────
+        _dist = _distributions.get(sel_topic)
+        if _dist is not None:
+            _max_c  = max(_dist.max(), 1)
+            _base   = TOPIC_BASE_COLORS.get(sel_topic, "#3b4994")
+            _BAR_H  = 44  # max bar height px
+            _bar_divs = ""
+            for _q, _cnt in _dist.items():
+                _h      = max(int(_cnt / _max_c * _BAR_H), 2)
+                _spacer = _BAR_H - _h
+                _bar_divs += (
+                    f'<div style="display:flex;flex-direction:column;'
+                    f'align-items:center;flex:1">'
+                    f'<span style="font-size:8px;color:#555;height:13px;'
+                    f'line-height:13px;font-weight:600">{_cnt}</span>'
+                    f'<div style="height:{_spacer}px"></div>'
+                    f'<div style="width:88%;height:{_h}px;background:{_base};'
+                    f'border-radius:2px 2px 0 0;opacity:0.82"></div>'
+                    f'<span style="font-size:8px;color:#aaa;height:13px;'
+                    f'line-height:13px;margin-top:2px">{_q}</span>'
+                    f'</div>'
+                )
+            st.markdown(
+                '<hr style="margin:6px 0;border-color:#eee">'
+                '<div style="font-size:11px;font-weight:700;color:#555;'
+                'text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">'
+                'Activity Distribution</div>'
+                f'<div style="display:flex;gap:2px;border-bottom:1px solid #ddd;'
+                f'padding-bottom:0">{_bar_divs}</div>'
+                '<div style="font-size:9px;color:#bbb;margin-top:2px">'
+                'hexagons per activity quintile</div>',
+                unsafe_allow_html=True
+            )
+
         # ── Spearman correlation card ──────────────────────────────────────────
         sp = _spearman.get(sel_topic, {})
         if sp.get("r") is not None:
@@ -509,10 +562,16 @@ with col_map:
                     icon=folium.DivIcon(html="", icon_size=(0,0))
                 ).add_to(m)
         m.get_root().html.add_child(folium.Element(
-            '<script>setTimeout(function(){'
-            'Object.values(window).filter(function(v){'
-            'return v&&v._leaflet_id;}).forEach(function(mp){'
-            'try{mp.invalidateSize();}catch(e){}});},400);</script>'))
+            '<script>'
+            '(function retry(n){'
+            'setTimeout(function(){'
+            'var found=false;'
+            'for(var k in window){'
+            'try{if(window[k]&&typeof window[k].invalidateSize==="function"&&window[k]._container){'
+            'window[k].invalidateSize(true);found=true;}}'
+            'catch(e){}}'
+            'if(!found&&n>0)retry(n-1);},300);})(8);'
+            '</script>'))
         st_folium(m, width=None, height=900, returned_objects=[])
 
     # ── COMMENTS MAP ──────────────────────────────────────────────────────────
@@ -539,10 +598,16 @@ with col_map:
         m.get_root().html.add_child(folium.Element(EMOTION_LEG))
         m.get_root().html.add_child(folium.Element(SENTIMENT_LEG))
         m.get_root().html.add_child(folium.Element(
-            '<script>setTimeout(function(){'
-            'Object.values(window).filter(function(v){'
-            'return v&&v._leaflet_id;}).forEach(function(mp){'
-            'try{mp.invalidateSize();}catch(e){}});},400);</script>'))
+            '<script>'
+            '(function retry(n){'
+            'setTimeout(function(){'
+            'var found=false;'
+            'for(var k in window){'
+            'try{if(window[k]&&typeof window[k].invalidateSize==="function"&&window[k]._container){'
+            'window[k].invalidateSize(true);found=true;}}'
+            'catch(e){}}'
+            'if(!found&&n>0)retry(n-1);},300);})(8);'
+            '</script>'))
         st_folium(m, width=None, height=900, returned_objects=[])
 
     # ── COMPARE MAP — custom swipe, no SideBySideLayers plugin ───────────────────
