@@ -186,6 +186,8 @@ for _feat in geojson["features"]:
             _all_coords.extend(_poly[0])
 _MAP_BOUNDS = [[min(c[1] for c in _all_coords), min(c[0] for c in _all_coords)],
                [max(c[1] for c in _all_coords), max(c[0] for c in _all_coords)]]
+_MAP_CENTER = [(_MAP_BOUNDS[0][0] + _MAP_BOUNDS[1][0]) / 2,
+               (_MAP_BOUNDS[0][1] + _MAP_BOUNDS[1][1]) / 2]
 
 # ── KPI strip (position:fixed so render order doesn't affect visual placement) ─
 st.markdown(
@@ -487,8 +489,7 @@ with col_map:
 
     # ── BIVARIATE MAP ──────────────────────────────────────────────────────────
     if mode == "🗺 Bivariate":
-        m = folium.Map(tiles="CartoDB positron")
-        m.fit_bounds(_MAP_BOUNDS)
+        m = folium.Map(location=_MAP_CENTER, zoom_start=11, tiles="CartoDB positron")
         folium.GeoJson(
             geojson,
             style_function=make_style(topic_df),
@@ -511,8 +512,7 @@ with col_map:
 
     # ── COMMENTS MAP ──────────────────────────────────────────────────────────
     elif mode == "💬 Comments":
-        m = folium.Map(tiles="CartoDB positron")
-        m.fit_bounds(_MAP_BOUNDS)
+        m = folium.Map(location=_MAP_CENTER, zoom_start=11, tiles="CartoDB positron")
         cluster = MarkerCluster(max_cluster_radius=50).add_to(m)
         sample  = filt.sample(min(len(filt), 3000), random_state=42)
         for _, row in sample.iterrows():
@@ -608,8 +608,7 @@ var RC = {rc_js};
   h.style.top  = h2+'px';
 }})();
 
-var map = L.map('map',{{zoomControl:true}});
-map.fitBounds({json.dumps(_MAP_BOUNDS)});
+var map = L.map('map',{{zoomControl:true}}).setView({json.dumps(_MAP_CENTER)},11);
 L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
   {{attribution:'&copy; CartoDB',maxZoom:19}}).addTo(map);
 
