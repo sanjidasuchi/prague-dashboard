@@ -19,15 +19,26 @@ st.markdown("""
     #MainMenu                      { display:none !important; }
     footer                         { display:none !important; }
 
-    body { overflow:hidden !important; }
+    html, body { overflow:hidden !important; margin:0 !important; }
     .block-container { padding:0 !important; max-width:100% !important; }
 
-    /* ONE stHorizontalBlock — fills to viewport bottom regardless of header height.
-       body overflow:hidden clips anything past 100vh so no gap is ever visible. */
+    /* Fixed header: always 74px at top */
+    #app-header {
+        position:fixed !important; top:0 !important;
+        left:0 !important; right:0 !important;
+        height:74px !important; z-index:999 !important;
+        overflow:hidden !important;
+    }
+
+    /* Main block: fixed from 74px to bottom — zero gap guaranteed */
     [data-testid="stHorizontalBlock"] {
-        height:100vh !important;
+        position:fixed !important;
+        top:74px !important; bottom:0 !important;
+        left:0 !important; right:0 !important;
+        width:100% !important; height:auto !important;
         align-items:stretch !important;
         overflow:hidden !important;
+        z-index:1 !important;
     }
     [data-testid="stColumn"]:first-child {
         background:#fff !important; border-right:1px solid #dde !important;
@@ -59,10 +70,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ── Header: pure HTML — fixed 74px, no Streamlit columns ──────────────────────
+# ── Header: position:fixed so it never shifts; spacer pushes doc flow below it ──
 st.markdown(
-    '<table style="width:100%;height:74px;background:#d6eaf8;border-collapse:collapse;'
-    'border-bottom:3px solid #85b8d4;table-layout:fixed">'
+    '<div id="app-header" style="background:#d6eaf8;border-bottom:3px solid #85b8d4;'
+    'display:flex;align-items:center;padding:0">'
+    '<table style="width:100%;height:74px;border-collapse:collapse;table-layout:fixed">'
     '<tr>'
     '<td style="padding:10px 20px;vertical-align:middle;width:62%">'
     '<div style="font-size:1.5rem;font-weight:800;color:#1a1a2e;line-height:1.2">'
@@ -78,7 +90,9 @@ st.markdown(
     'Explore how Prague residents emotionally map their city alongside '
     'Copernicus satellite data to reveal where urban quality and lived experience align or conflict.'
     '</div></td>'
-    '</tr></table>',
+    '</tr></table>'
+    '</div>'
+    '<div style="height:74px"></div>',
     unsafe_allow_html=True
 )
 
@@ -232,7 +246,7 @@ with col_left:
     st.markdown(
         '<div style="font-size:13px;font-weight:700;margin-bottom:4px">View Mode</div>',
         unsafe_allow_html=True)
-    mode = st.radio("mode", _MODES, label_visibility="collapsed", key="mode_radio")
+    mode = st.selectbox("View Mode", _MODES, label_visibility="collapsed", key="mode_radio")
     st.markdown(
         '<hr style="margin:8px 0;border-color:#e0e0e0">'
         '<div style="font-size:13px;font-weight:700;margin-bottom:6px">How to Use</div>'
