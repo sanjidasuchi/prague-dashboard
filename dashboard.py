@@ -13,95 +13,59 @@ st.set_page_config(page_title="Prague Mapped by People and Satellites",
 
 st.markdown("""
 <style>
-    header[data-testid="stHeader"]  { display: none !important; }
-    [data-testid="stToolbar"]       { display: none !important; }
-    [data-testid="stDecoration"]    { display: none !important; }
-    #MainMenu                       { display: none !important; }
-    footer                          { display: none !important; }
-    .block-container { padding: 0 !important; max-width: 100% !important; }
+    header[data-testid="stHeader"] { display:none !important; }
+    [data-testid="stToolbar"]      { display:none !important; }
+    [data-testid="stDecoration"]   { display:none !important; }
+    #MainMenu                      { display:none !important; }
+    footer                         { display:none !important; }
+    .block-container { padding:0 !important; max-width:100% !important; }
 
-    /* ── Header row (first stHorizontalBlock) ── */
-    [data-testid="stHorizontalBlock"]:first-of-type {
-        background: #d6eaf8 !important;
-        border-bottom: 3px solid #85b8d4 !important;
-        margin: 0 !important;
+    /* Side panels */
+    [data-testid="stColumn"]:first-child {
+        background:#fff; border-right:1px solid #dde;
+        padding:12px 12px !important; overflow-y:auto;
     }
-    [data-testid="stHorizontalBlock"]:first-of-type [data-testid="stColumn"] {
-        padding: 14px 16px !important;
-        background: transparent !important;
-        border: none !important;
+    [data-testid="stColumn"]:last-child {
+        background:#fff; border-left:1px solid #dde;
+        padding:8px 10px !important; overflow-y:auto;
     }
-    /* Mode radio inside header — semi-transparent pill, centered */
-    [data-testid="stHorizontalBlock"]:first-of-type div[data-testid="stRadio"] {
-        background: rgba(255,255,255,0.6) !important;
-        border-radius: 8px !important;
-        padding: 4px 10px !important;
-        margin: 0 auto !important;
-        border-bottom: none !important;
-        display: flex !important;
-        justify-content: center !important;
-    }
-    [data-testid="stHorizontalBlock"]:first-of-type div[data-testid="stRadio"] > div {
-        justify-content: center !important;
-    }
+    /* Map column */
+    [data-testid="stColumn"]:nth-child(2) { padding:0 !important; }
 
-    /* ── Main content columns (second stHorizontalBlock) ── */
-    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:first-child {
-        border-right: 1px solid #e0e0e0; background: #fff;
-        padding: 10px 10px !important; overflow-y: auto;
-    }
-    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:last-child {
-        border-left: 1px solid #e0e0e0; background: #fff;
-        padding: 6px 8px !important; overflow-y: auto;
-    }
-    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) {
-        padding: 0 !important;
-    }
-    /* Topic radio in main right panel — plain */
-    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:last-child div[data-testid="stRadio"] {
-        background: transparent !important; padding: 0 !important;
-        margin: 0 !important; border-bottom: none !important;
-    }
-
-    div[data-testid="stRadio"] > label { display: none !important; }
-    div[data-testid="stRadio"] label   { font-size: 12px !important; }
-    div[data-testid="stSelectbox"]       { margin-bottom: 2px !important; }
-    div[data-testid="stSelectbox"] label { font-size: 11px !important; }
-    p { margin: 0; }
+    /* All radios: plain by default */
+    div[data-testid="stRadio"] > label { display:none !important; }
+    div[data-testid="stRadio"] label   { font-size:12px !important; }
+    div[data-testid="stSelectbox"]       { margin-bottom:2px !important; }
+    div[data-testid="stSelectbox"] label { font-size:11px !important; }
+    p { margin:0; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Header: title (left) | mode buttons (centre) | welcome (right) ────────────
+# ── Header: pure HTML, title left + welcome right ─────────────────────────────
+st.markdown(
+    '<table style="width:100%;background:#d6eaf8;border-collapse:collapse;'
+    'border-bottom:3px solid #85b8d4">'
+    '<tr>'
+    '<td style="width:60%;vertical-align:middle;padding:16px 16px 14px 20px">'
+    '<div style="font-size:1.6rem;font-weight:800;color:#1a1a2e">'
+    'Prague Mapped by People and Satellites</div>'
+    '<div style="font-size:0.82rem;color:#2c5f7a;margin-top:4px">'
+    'Participatory emotional mapping meets Copernicus satellite indicators: '
+    'NDVI, night lights, land surface temperature and NO&#8322;</div>'
+    '</td>'
+    '<td style="width:40%;vertical-align:middle;text-align:right;'
+    'padding:16px 20px 14px 16px;border-left:1px solid #aac9e0">'
+    '<div style="font-size:0.9rem;font-weight:700;color:#1a1a2e;margin-bottom:3px">'
+    'Welcome!</div>'
+    '<div style="font-size:0.73rem;color:#2c5f7a;line-height:1.55">'
+    'Explore how Prague residents emotionally map their city alongside '
+    'Copernicus satellite data to reveal where urban quality and lived experience align or conflict.'
+    '</div></td>'
+    '</tr></table>',
+    unsafe_allow_html=True
+)
+
 _MODES = ["🗺 Bivariate", "💬 Comments", "⟺ Compare"]
-h_title, h_mode, h_welcome = st.columns([4, 3, 3])
-
-with h_title:
-    st.markdown(
-        '<div style="font-size:1.6rem;font-weight:800;color:#1a1a2e">'
-        'Prague Mapped by People and Satellites</div>'
-        '<div style="font-size:0.82rem;color:#2c5f7a;margin-top:5px">'
-        'Participatory emotional mapping meets Copernicus satellite indicators: '
-        'NDVI, night lights, land surface temperature and NO&#8322;</div>',
-        unsafe_allow_html=True)
-
-with h_mode:
-    st.markdown(
-        '<div style="text-align:center;font-size:11px;font-weight:600;'
-        'color:#2c5f7a;margin-bottom:6px">Select view</div>',
-        unsafe_allow_html=True)
-    mode = st.radio("mode", _MODES, horizontal=True,
-                    label_visibility="collapsed", key="mode_radio")
-
-with h_welcome:
-    st.markdown(
-        '<div style="text-align:right">'
-        '<div style="font-size:0.9rem;font-weight:700;color:#1a1a2e;margin-bottom:4px">'
-        'Welcome!</div>'
-        '<div style="font-size:0.73rem;color:#2c5f7a;line-height:1.6">'
-        'Explore how Prague residents emotionally map their city alongside Copernicus '
-        'satellite data to reveal where urban quality and lived experience align or conflict.'
-        '</div></div>',
-        unsafe_allow_html=True)
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 BIVAR_COLORS = {
@@ -244,7 +208,53 @@ SENTIMENT_LEG = (
 )
 
 # ── LAYOUT ─────────────────────────────────────────────────────────────────────
-col_left, col_map, col_right = st.columns([1.2, 4.6, 1.8])
+col_left, col_map, col_right = st.columns([2, 6, 2])
+
+# ── LEFT PANEL (runs first — defines mode, sel_age, sel_gender) ────────────────
+with col_left:
+    st.markdown(
+        '<div style="font-size:13px;font-weight:700;margin-bottom:4px">View Mode</div>',
+        unsafe_allow_html=True)
+    mode = st.radio("mode", _MODES, label_visibility="collapsed", key="mode_radio")
+
+    if mode == "💬 Comments":
+        st.markdown('<hr style="margin:8px 0;border-color:#e0e0e0">', unsafe_allow_html=True)
+        st.markdown(
+            '<div style="font-size:13px;font-weight:700;margin-bottom:4px">Filters</div>',
+            unsafe_allow_html=True)
+        st.markdown('<span style="font-size:11px;font-weight:600">Age Group</span>',
+                    unsafe_allow_html=True)
+        sel_age = st.selectbox("Age",
+                               ["All"]+["0-19","20-29","30-39","40-49","50-59","60-69","70+"],
+                               label_visibility="collapsed", key="age_c")
+        st.markdown('<span style="font-size:11px;font-weight:600">Gender</span>',
+                    unsafe_allow_html=True)
+        sel_gender = st.selectbox("Gender",
+                                  ["All"]+sorted(comments["gender"].dropna().unique().tolist()),
+                                  label_visibility="collapsed", key="gen_c")
+    else:
+        sel_age, sel_gender = "All", "All"
+
+    st.markdown(
+        '<hr style="margin:10px 0;border-color:#e0e0e0">'
+        '<div style="font-size:13px;font-weight:700;margin-bottom:6px">How to Use</div>'
+        '<div style="font-size:11px;color:#444;line-height:1.8">'
+        '<b>🗺 Bivariate</b> — hex map per topic<br>'
+        '<b>💬 Comments</b> — residents&#39; comments<br>'
+        '<b>⟺ Compare</b> — swipe two topics side by side<br>'
+        'Click any hexagon for details.'
+        '</div>'
+        '<hr style="margin:10px 0;border-color:#e0e0e0">'
+        '<div style="font-size:13px;font-weight:700;margin-bottom:4px">Data Sources</div>'
+        '<div style="font-size:11px;color:#555;line-height:1.8">'
+        'Emotional Map: emotionalmap.eu<br>'
+        'P&#225;nek et al., 2021<br>'
+        'Copernicus / Sentinel-2 2023<br>'
+        'Google Earth Engine 2023<br>'
+        'GHSL Population 2020'
+        '</div>',
+        unsafe_allow_html=True
+    )
 
 # ── RIGHT PANEL ────────────────────────────────────────────────────────────────
 with col_right:
@@ -304,51 +314,10 @@ with col_right:
                                   [t for t in topics if t != sel_topic],
                                   label_visibility="collapsed", key="t2")
 
-# ── LEFT PANEL ─────────────────────────────────────────────────────────────────
-with col_left:
-    st.markdown(
-        '<div style="font-size:13px;font-weight:700;margin-bottom:6px">How to Use</div>'
-        '<div style="font-size:11px;color:#444;line-height:1.8">'
-        '<b>🗺 Bivariate</b> — select a topic to see the hex map<br>'
-        '<b>💬 Comments</b> — read residents&#39; comments by location<br>'
-        '<b>⟺ Compare</b> — swipe to compare two topics side by side<br>'
-        'Click any hexagon for details and comments.'
-        '</div>'
-
-        '<hr style="margin:12px 0;border-color:#e0e0e0">'
-        '<div style="font-size:13px;font-weight:700;margin-bottom:4px">Data Sources</div>'
-        '<div style="font-size:11px;color:#555;line-height:1.8">'
-        'Emotional Map: emotionalmap.eu<br>'
-        'P&#225;nek et al., 2021<br>'
-        'Copernicus / Sentinel-2 2023<br>'
-        'Google Earth Engine 2023<br>'
-        'GHSL Population 2020'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
 # ── MAP SECTION ────────────────────────────────────────────────────────────────
 with col_map:
     topic_df  = hex_topics[hex_topics["topic"] == sel_topic].set_index("GRID_ID")
     topic_df2 = hex_topics[hex_topics["topic"] == sel_topic2].set_index("GRID_ID")
-
-    # Age/gender filters — shown inside map column only in Comments mode
-    if mode == "💬 Comments":
-        fa, fb = st.columns(2)
-        with fa:
-            st.markdown('<span style="font-size:11px;font-weight:600">Age Group</span>',
-                        unsafe_allow_html=True)
-            sel_age = st.selectbox("Age",
-                                   ["All"]+["0-19","20-29","30-39","40-49","50-59","60-69","70+"],
-                                   label_visibility="collapsed", key="age_c")
-        with fb:
-            st.markdown('<span style="font-size:11px;font-weight:600">Gender</span>',
-                        unsafe_allow_html=True)
-            sel_gender = st.selectbox("Gender",
-                                      ["All"]+sorted(comments["gender"].dropna().unique().tolist()),
-                                      label_visibility="collapsed", key="gen_c")
-    else:
-        sel_age, sel_gender = "All", "All"
 
     filt = comments.copy()
     if sel_age    != "All": filt = filt[filt["age"]    == sel_age]
@@ -413,8 +382,6 @@ with col_map:
 
     # ── COMPARE MAP — swipe on one map via HTML ────────────────────────────────
     elif mode == "⟺ Compare":
-        topic_df2 = hex_topics[hex_topics["topic"] == sel_topic2].set_index("GRID_ID")
-
         m = folium.Map(location=[50.075,14.437], zoom_start=11,
                        tiles="CartoDB positron")
 
