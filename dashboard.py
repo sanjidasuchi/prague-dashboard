@@ -447,16 +447,16 @@ with col_map:
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 html,body{{margin:0;padding:0;height:100%;overflow:hidden;}}
-#map{{height:100vh;width:100%;position:relative;}}
+#map{{height:100%;width:100%;position:relative;}}
 #divider{{position:absolute;top:0;bottom:0;width:4px;
           background:#fff;box-shadow:0 0 8px rgba(0,0,0,.6);
           z-index:1000;cursor:ew-resize;}}
-#handle{{position:absolute;top:50%;left:50%;
-         transform:translate(-50%,-50%);
+#handle{{position:absolute;
          width:46px;height:46px;background:#fff;border-radius:50%;
          box-shadow:0 2px 10px rgba(0,0,0,.4);
          display:flex;align-items:center;justify-content:center;
-         font-size:20px;font-weight:900;user-select:none;}}
+         font-size:22px;font-weight:900;cursor:ew-resize;user-select:none;
+         z-index:1001;transform:translate(-50%,-50%);}}
 #lbl-l{{position:absolute;top:12px;left:60px;z-index:1001;
         background:{col_l};color:#fff;padding:4px 14px;
         border-radius:20px;font-size:12px;font-weight:700;font-family:sans-serif;pointer-events:none;}}
@@ -465,9 +465,10 @@ html,body{{margin:0;padding:0;height:100%;overflow:hidden;}}
         border-radius:20px;font-size:12px;font-weight:700;font-family:sans-serif;pointer-events:none;}}
 </style>
 </head>
-<body>
+<body style="height:100%">
 <div id="map">
-  <div id="divider"><div id="handle">&#8596;</div></div>
+  <div id="divider"></div>
+  <div id="handle">&#8596;</div>
   <div id="lbl-l">&#9664; {lbl_l}</div>
   <div id="lbl-r">{lbl_r} &#9654;</div>
 </div>
@@ -498,19 +499,25 @@ var rightLayer = L.geoJSON(GJ,{{
   }}
 }}).addTo(map);
 
-var divEl = document.getElementById('divider');
-var mapEl = document.getElementById('map');
+var divEl    = document.getElementById('divider');
+var handleEl = document.getElementById('handle');
+var mapEl    = document.getElementById('map');
 
 function clip(x){{
   var w = mapEl.offsetWidth;
+  var h = mapEl.offsetHeight;
   x = Math.max(2, Math.min(x, w-2));
-  /* Get the two separate SVG elements created by the two renderers */
+  /* Clip the two separate SVG elements */
   var svgs = map.getPanes().overlayPane.querySelectorAll('svg');
   if(svgs.length >= 2){{
     svgs[0].style.clipPath = 'inset(0 '+(100 - x/w*100).toFixed(1)+'% 0 0)';
     svgs[1].style.clipPath = 'inset(0 0 0 '+(x/w*100).toFixed(1)+'%)';
   }}
+  /* Divider line */
   divEl.style.left = (x-2)+'px';
+  /* Handle always at vertical centre, horizontal at divider */
+  handleEl.style.left = x+'px';
+  handleEl.style.top  = (h/2)+'px';
 }}
 
 /* Init after layers are fully painted */
@@ -520,28 +527,24 @@ map.on('move zoom', function(){{
   clip(x);
 }});
 
-/* Drag — disable map pan while dragging divider */
+/* Drag — both divider line and handle are draggable */
 var drag = false;
-divEl.addEventListener('mousedown',function(e){{
-  drag=true; map.dragging.disable(); e.preventDefault(); e.stopPropagation();
-}});
+function startDrag(e){{ drag=true; map.dragging.disable(); e.preventDefault(); e.stopPropagation(); }}
+divEl.addEventListener('mousedown', startDrag);
+handleEl.addEventListener('mousedown', startDrag);
 document.addEventListener('mousemove',function(e){{
   if(!drag) return;
   clip(e.clientX - mapEl.getBoundingClientRect().left);
 }});
-document.addEventListener('mouseup',function(){{
-  drag=false; map.dragging.enable();
-}});
-divEl.addEventListener('touchstart',function(e){{
-  drag=true; map.dragging.disable(); e.preventDefault();
-}},{{passive:false}});
+document.addEventListener('mouseup',function(){{ drag=false; map.dragging.enable(); }});
+function startDragTouch(e){{ drag=true; map.dragging.disable(); e.preventDefault(); }}
+divEl.addEventListener('touchstart', startDragTouch,{{passive:false}});
+handleEl.addEventListener('touchstart', startDragTouch,{{passive:false}});
 document.addEventListener('touchmove',function(e){{
   if(!drag) return;
   clip(e.touches[0].clientX - mapEl.getBoundingClientRect().left);
 }},{{passive:false}});
-document.addEventListener('touchend',function(){{
-  drag=false; map.dragging.enable();
-}});
+document.addEventListener('touchend',function(){{ drag=false; map.dragging.enable(); }});
 </script>
 </body></html>"""
         components.html(html_content, height=900, scrolling=False)
