@@ -164,19 +164,21 @@ def topic_gradient(topic_name, n=5):
             f"{int(255+(b-255)*(i+1)/n):02x}" for i in range(n)]
 
 def make_choropleth_style(tdf, topic_name):
-    """Color by respondent count quantile using topic's own color gradient."""
-    shades = topic_gradient(topic_name)
-    vals   = pd.to_numeric(tdf["x_val"], errors="coerce").fillna(0)
+    """Color hexagons with topic's signature color; vary opacity by activity quintile."""
+    base  = TOPIC_BASE_COLORS.get(topic_name, "#888888")
+    opacs = [0.15, 0.30, 0.50, 0.70, 0.90]
+    vals  = pd.to_numeric(tdf["x_val"], errors="coerce").fillna(0)
     try:
         qs = pd.qcut(vals.rank(method="first"), q=5,
                      labels=[0,1,2,3,4], duplicates="drop")
     except Exception:
         qs = pd.Series(2, index=tdf.index)
-    color_map = {gid: shades[int(q)] for gid, q in qs.items()}
+    op_map = {gid: opacs[int(q)] for gid, q in qs.items()}
     def fn(feat):
         gid = feat["properties"].get("GRID_ID","")
-        return {"fillColor": color_map.get(gid,"#eeeeee"),
-                "color":"#666","weight":0.5,"fillOpacity":0.8}
+        return {"fillColor": base,
+                "fillOpacity": op_map.get(gid, 0.3),
+                "color":"#555","weight":0.4}
     return fn
 
 def highlight_fn(feat):
