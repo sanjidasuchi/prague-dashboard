@@ -77,6 +77,7 @@ st.markdown("""
     div[data-testid="stSelectbox"]       { margin-bottom:2px !important; }
     div[data-testid="stSelectbox"] label { font-size:11px !important; }
     p { margin:0; }
+    #sp-toggle:checked ~ #sp-info-box { display:block !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -571,9 +572,32 @@ with col_right:
             bar_color  = "#3b4994" if r_val >= 0 else "#be64ac"
             st.markdown(
                 '<hr style="margin:8px 0;border-color:#eee">'
+                '<input type="checkbox" id="sp-toggle" style="display:none">'
                 '<div style="font-size:11px;font-weight:700;color:#555;'
-                'text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">'
-                'Spearman Correlation</div>'
+                'text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;'
+                'display:flex;align-items:center;gap:5px">'
+                'Spearman Correlation'
+                '<label for="sp-toggle" '
+                'style="display:inline-flex;align-items:center;justify-content:center;'
+                'width:14px;height:14px;border-radius:50%;background:#85b8d4;color:#fff;'
+                'font-size:9px;font-weight:800;cursor:pointer;flex-shrink:0;'
+                'line-height:1;user-select:none">i</label>'
+                '</div>'
+                '<div id="sp-info-box" style="display:none;font-size:10px;color:#333;'
+                'line-height:1.7;border:1px solid #85b8d4;border-radius:4px;'
+                'padding:8px 10px;margin-bottom:6px;background:#f0f7fb">'
+                '<b>What is Spearman r?</b><br>'
+                'Measures how consistently one variable increases as the other does, '
+                'using ranks rather than raw values.<br><br>'
+                '<b>r ranges from −1 to +1:</b><br>'
+                '&nbsp;0.0 – 0.3 &nbsp;= weak<br>'
+                '&nbsp;0.3 – 0.5 &nbsp;= moderate<br>'
+                '&nbsp;&gt;0.5 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= strong<br><br>'
+                '<b>Negative r</b> means as one variable rises the other falls.<br>'
+                '<b>p &lt; 0.05</b> means the result is statistically significant.'
+                '</div>',
+                unsafe_allow_html=True)
+            st.markdown(
                 f'<div style="font-size:22px;font-weight:800;color:#1a1a2e;line-height:1">'
                 f'r = {r_val:+.3f}</div>'
                 f'<div style="background:#eee;border-radius:3px;height:5px;margin:4px 0">'
