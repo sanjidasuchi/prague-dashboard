@@ -569,27 +569,11 @@ with col_right:
             p_str      = "< 0.001" if p_val < 0.001 else f"= {p_val:.3f}"
             bar_w      = int(abs(r_val) * 100)
             bar_color  = "#3b4994" if r_val >= 0 else "#be64ac"
-            st.markdown('<hr style="margin:8px 0;border-color:#eee">', unsafe_allow_html=True)
-            _hcol, _icol = st.columns([5, 1])
-            with _hcol:
-                st.markdown(
-                    '<div style="font-size:11px;font-weight:700;color:#555;'
-                    'text-transform:uppercase;letter-spacing:.5px;padding-top:6px">'
-                    'Spearman Correlation</div>',
-                    unsafe_allow_html=True)
-            with _icol:
-                with st.popover("ℹ", use_container_width=True):
-                    st.markdown(
-                        "**What is Spearman r?**\n\n"
-                        "Measures how consistently one variable increases as the other does, "
-                        "using ranks rather than raw values.\n\n"
-                        "**r ranges from −1 to +1:**\n"
-                        "- 0.0 – 0.3 = weak\n"
-                        "- 0.3 – 0.5 = moderate\n"
-                        "- \> 0.5 = strong\n\n"
-                        "A **negative r** means as one variable rises the other falls."
-                    )
             st.markdown(
+                '<hr style="margin:8px 0;border-color:#eee">'
+                '<div style="font-size:11px;font-weight:700;color:#555;'
+                'text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">'
+                'Spearman Correlation</div>'
                 f'<div style="font-size:22px;font-weight:800;color:#1a1a2e;line-height:1">'
                 f'r = {r_val:+.3f}</div>'
                 f'<div style="background:#eee;border-radius:3px;height:5px;margin:4px 0">'
