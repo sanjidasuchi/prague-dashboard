@@ -1,5 +1,6 @@
 import os, json, tempfile
 import pandas as pd
+from scipy import stats
 import folium
 from folium.plugins import MarkerCluster, SideBySideLayers
 import streamlit as st
@@ -30,10 +31,18 @@ st.markdown("""
         overflow:hidden !important;
     }
 
-    /* Main block: fixed from 74px to bottom — zero gap guaranteed */
+    /* KPI strip */
+    #kpi-bar {
+        position:fixed !important; top:74px !important;
+        left:0 !important; right:0 !important;
+        height:36px !important; z-index:998 !important;
+        overflow:hidden !important;
+    }
+
+    /* Main block: fixed from 110px (header 74 + kpi 36) to bottom */
     [data-testid="stHorizontalBlock"] {
         position:fixed !important;
-        top:74px !important; bottom:0 !important;
+        top:110px !important; bottom:0 !important;
         left:0 !important; right:0 !important;
         width:100% !important; height:auto !important;
         align-items:stretch !important;
@@ -89,6 +98,26 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# ── KPI strip ──────────────────────────────────────────────────────────────────
+def _kpi(value, label):
+    return (f'<div style="display:flex;align-items:baseline;gap:5px">'
+            f'<span style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-.3px">{value}</span>'
+            f'<span style="font-size:10px;color:#9dbdd4;text-transform:uppercase;letter-spacing:.5px">{label}</span>'
+            f'</div>')
+
+st.markdown(
+    '<div id="kpi-bar" style="background:#1a1a2e;display:flex;align-items:center;'
+    'padding:0 28px;gap:36px;height:36px">'
+    + _kpi(f"{_total_marks:,}", "total marks")
+    + _kpi(f"{_hexes_with_data} / {_total_hexes}", "hexagons covered")
+    + _kpi(f"{_n_respondents:,}" if isinstance(_n_respondents, int) else _n_respondents, "respondents")
+    + _kpi("7", "topics")
+    + _kpi("2021", "survey year")
+    + '</div>'
+    '<div style="height:36px"></div>',
+    unsafe_allow_html=True
+)
+
 _MODES = ["🗺 Bivariate", "💬 Comments", "⟺ Compare"]
 
 # ── Constants ──────────────────────────────────────────────────────────────────
@@ -134,6 +163,31 @@ def load_data():
     return c, h, gj
 
 comments, hex_topics, geojson = load_data()
+
+# ── Pre-compute KPI numbers ────────────────────────────────────────────────────
+_total_marks    = int(pd.to_numeric(hex_topics["respondents"], errors="coerce").fillna(0).sum())
+_total_hexes    = len(geojson["features"])
+_hexes_with_data = int(hex_topics.groupby("GRID_ID")["respondents"]
+                       .apply(lambda s: pd.to_numeric(s, errors="coerce").fillna(0).sum() > 0)
+                       .sum())
+_n_respondents  = int(comments["user_id"].nunique()) if "user_id" in comments.columns else "—"
+
+# ── Pre-compute Spearman r per topic ──────────────────────────────────────────
+@st.cache_data
+def compute_spearman(_hex_topics):
+    out = {}
+    for topic, tdf in _hex_topics.groupby("topic"):
+        x = pd.to_numeric(tdf["x_val"], errors="coerce")
+        y = pd.to_numeric(tdf["y_val"], errors="coerce")
+        mask = x.notna() & y.notna()
+        if mask.sum() >= 5:
+            r, p = stats.spearmanr(x[mask], y[mask])
+            out[topic] = {"r": float(r), "p": float(p), "n": int(mask.sum())}
+        else:
+            out[topic] = {"r": None, "p": None, "n": 0}
+    return out
+
+_spearman = compute_spearman(hex_topics)
 
 def shape_centroid(geom):
     try:
@@ -367,6 +421,40 @@ with col_right:
             sel_topic2 = st.selectbox("Compare with",
                                       [t for t in topics if t != sel_topic],
                                       label_visibility="collapsed", key="t2")
+
+        # ── Spearman correlation card ──────────────────────────────────────────
+        sp = _spearman.get(sel_topic, {})
+        if sp.get("r") is not None:
+            r_val = sp["r"]
+            p_val = sp["p"]
+            sig   = p_val < 0.05
+            sig_color  = "#27AE60" if sig else "#888"
+            sig_label  = "significant ✓" if sig else "not significant"
+            p_str      = "< 0.001" if p_val < 0.001 else f"= {p_val:.3f}"
+            bar_w      = int(abs(r_val) * 100)
+            bar_color  = "#3b4994" if r_val >= 0 else "#be64ac"
+            st.markdown(
+                '<hr style="margin:8px 0;border-color:#eee">'
+                '<div style="font-size:11px;font-weight:700;color:#555;'
+                'text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">'
+                'Spearman Correlation</div>'
+                f'<div style="font-size:22px;font-weight:800;color:#1a1a2e;line-height:1">'
+                f'r = {r_val:+.3f}</div>'
+                f'<div style="background:#eee;border-radius:3px;height:5px;margin:4px 0">'
+                f'<div style="background:{bar_color};width:{bar_w}%;height:5px;border-radius:3px"></div></div>'
+                f'<div style="font-size:11px;color:#555">p {p_str} &nbsp;·&nbsp; '
+                f'<span style="color:{sig_color};font-weight:600">{sig_label}</span></div>'
+                f'<div style="font-size:10px;color:#888;margin-top:2px">n = {sp["n"]} hexagons</div>',
+                unsafe_allow_html=True)
+        if mode == "⟺ Compare":
+            sp2 = _spearman.get(sel_topic2, {})
+            if sp2.get("r") is not None:
+                r2 = sp2["r"]; p2 = sp2["p"]
+                p2_str = "< 0.001" if p2 < 0.001 else f"= {p2:.3f}"
+                st.markdown(
+                    f'<div style="font-size:11px;color:#555;margin-top:4px">'
+                    f'<b>{sel_topic2}:</b> r = {r2:+.3f}, p {p2_str}</div>',
+                    unsafe_allow_html=True)
 
 # ── MAP SECTION ────────────────────────────────────────────────────────────────
 with col_map:
