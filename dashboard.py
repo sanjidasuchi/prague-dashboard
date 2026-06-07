@@ -289,9 +289,10 @@ with col_right:
         sel_gender = st.selectbox("Gender",
                                   ["All"]+sorted(comments["gender"].dropna().unique().tolist()),
                                   label_visibility="collapsed", key="gen_c")
-        st.markdown('<span style="font-size:11px;font-weight:600">Topic</span>',
-                    unsafe_allow_html=True)
-        sel_topic_comment = st.selectbox(
+        st.markdown(
+            '<div style="font-size:11px;font-weight:600;margin-top:6px;margin-bottom:2px">Topic</div>',
+            unsafe_allow_html=True)
+        sel_topic_comment = st.radio(
             "Topic", ["All"] + list(EMOTION_COLORS.keys()),
             label_visibility="collapsed", key="topic_c")
     else:
