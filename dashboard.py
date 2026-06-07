@@ -515,9 +515,9 @@ function clip(x){{
   }}
   /* Divider line */
   divEl.style.left = (x-2)+'px';
-  /* Handle always at vertical centre, horizontal at divider */
+  /* Handle always at visual vertical centre, horizontal at divider */
   handleEl.style.left = x+'px';
-  handleEl.style.top  = (h/2)+'px';
+  handleEl.style.top  = (window.innerHeight/2)+'px';
 }}
 
 /* Init after layers are fully painted */
