@@ -20,78 +20,83 @@ st.markdown("""
     footer                         { display:none !important; }
     .block-container { padding:0 !important; max-width:100% !important; }
 
-    /* Stretch the columns row to remaining viewport */
-    [data-testid="stHorizontalBlock"] {
-        align-items: stretch !important;
-        min-height: calc(100vh - 82px) !important;
+    /* ── Header row ── */
+    [data-testid="stHorizontalBlock"]:first-of-type {
+        background:#d6eaf8 !important;
+        border-bottom:3px solid #85b8d4 !important;
+        align-items:center !important;
+        margin:0 !important;
+    }
+    [data-testid="stHorizontalBlock"]:first-of-type [data-testid="stColumn"] {
+        padding:12px 18px !important;
+        background:transparent !important;
+    }
+    /* Right side of header — radio horizontal, right-aligned */
+    [data-testid="stHorizontalBlock"]:first-of-type [data-testid="stColumn"]:last-child {
+        border-left:1px solid #aac9e0 !important;
+        display:flex !important; align-items:center !important;
+        justify-content:flex-end !important;
+    }
+    [data-testid="stHorizontalBlock"]:first-of-type div[data-testid="stRadio"] > div {
+        justify-content:flex-end !important; gap:8px !important;
+    }
+    [data-testid="stHorizontalBlock"]:first-of-type div[data-testid="stRadio"] label {
+        font-size:13px !important; font-weight:600 !important; color:#1a1a2e !important;
     }
 
-    /* Side panels — scrollable, full height */
-    [data-testid="stColumn"]:first-child {
+    /* ── Main layout (second stHorizontalBlock) ── */
+    [data-testid="stHorizontalBlock"]:nth-of-type(2) {
+        align-items:stretch !important;
+        min-height:calc(100vh - 80px) !important;
+    }
+    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:first-child {
         background:#fff; border-right:1px solid #dde;
         padding:12px 12px !important; overflow-y:auto;
-        height: calc(100vh - 82px); max-height: calc(100vh - 82px);
+        height:calc(100vh - 80px); max-height:calc(100vh - 80px);
     }
-    [data-testid="stColumn"]:last-child {
+    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:last-child {
         background:#fff; border-left:1px solid #dde;
         padding:8px 10px !important; overflow-y:auto;
-        height: calc(100vh - 82px); max-height: calc(100vh - 82px);
+        height:calc(100vh - 80px); max-height:calc(100vh - 80px);
     }
-
-    /* Map column — clips, no scroll */
-    [data-testid="stColumn"]:nth-child(2) {
+    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) {
         padding:0 !important; overflow:hidden;
-        height: calc(100vh - 82px); max-height: calc(100vh - 82px);
+        height:calc(100vh - 80px); max-height:calc(100vh - 80px);
+    }
+    /* Map iframe fills the column on every screen */
+    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) iframe {
+        height:calc(100vh - 80px) !important;
+        min-height:380px !important;
+        width:100% !important; display:block !important;
+    }
+    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) > div,
+    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) > div > div,
+    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) > div > div > div {
+        height:100% !important;
     }
 
-    /* Make map iframe fill the column on any screen */
-    [data-testid="stColumn"]:nth-child(2) iframe {
-        height: calc(100vh - 82px) !important;
-        min-height: 380px !important;
-        width: 100% !important;
-        display: block !important;
-    }
-    /* Unwrap Streamlit's nested divs so the iframe can stretch */
-    [data-testid="stColumn"]:nth-child(2) > div,
-    [data-testid="stColumn"]:nth-child(2) > div > div,
-    [data-testid="stColumn"]:nth-child(2) > div > div > div {
-        height: 100% !important;
-    }
-
-    /* All radios: plain by default */
+    /* Global widget styles */
     div[data-testid="stRadio"] > label { display:none !important; }
-    div[data-testid="stRadio"] label   { font-size:12px !important; }
     div[data-testid="stSelectbox"]       { margin-bottom:2px !important; }
     div[data-testid="stSelectbox"] label { font-size:11px !important; }
     p { margin:0; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Header: pure HTML, title left + welcome right ─────────────────────────────
-st.markdown(
-    '<table style="width:100%;background:#d6eaf8;border-collapse:collapse;'
-    'border-bottom:3px solid #85b8d4">'
-    '<tr>'
-    '<td style="width:60%;vertical-align:middle;padding:16px 16px 14px 20px">'
-    '<div style="font-size:1.6rem;font-weight:800;color:#1a1a2e">'
-    'Prague Mapped by People and Satellites</div>'
-    '<div style="font-size:0.82rem;color:#2c5f7a;margin-top:4px">'
-    'Participatory emotional mapping meets Copernicus satellite indicators: '
-    'NDVI, night lights, land surface temperature and NO&#8322;</div>'
-    '</td>'
-    '<td style="width:40%;vertical-align:middle;text-align:right;'
-    'padding:16px 20px 14px 16px;border-left:1px solid #aac9e0">'
-    '<div style="font-size:0.9rem;font-weight:700;color:#1a1a2e;margin-bottom:3px">'
-    'Welcome!</div>'
-    '<div style="font-size:0.73rem;color:#2c5f7a;line-height:1.55">'
-    'Explore how Prague residents emotionally map their city alongside '
-    'Copernicus satellite data to reveal where urban quality and lived experience align or conflict.'
-    '</div></td>'
-    '</tr></table>',
-    unsafe_allow_html=True
-)
-
+# ── Header: title left | mode radio right ─────────────────────────────────────
 _MODES = ["🗺 Bivariate", "💬 Comments", "⟺ Compare"]
+h_title, h_mode = st.columns([6, 4])
+with h_title:
+    st.markdown(
+        '<div style="font-size:1.6rem;font-weight:800;color:#1a1a2e">'
+        'Prague Mapped by People and Satellites</div>'
+        '<div style="font-size:0.82rem;color:#2c5f7a;margin-top:4px">'
+        'Participatory emotional mapping meets Copernicus satellite indicators: '
+        'NDVI, night lights, land surface temperature and NO&#8322;</div>',
+        unsafe_allow_html=True)
+with h_mode:
+    mode = st.radio("mode", _MODES, horizontal=True,
+                    label_visibility="collapsed", key="mode_radio")
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 BIVAR_COLORS = {
@@ -236,33 +241,17 @@ SENTIMENT_LEG = (
 # ── LAYOUT ─────────────────────────────────────────────────────────────────────
 col_left, col_map, col_right = st.columns([2, 6, 2])
 
-# ── LEFT PANEL (runs first — defines mode, sel_age, sel_gender) ────────────────
+# ── LEFT PANEL ────────────────────────────────────────────────────────────────
 with col_left:
     st.markdown(
-        '<div style="font-size:13px;font-weight:700;margin-bottom:4px">View Mode</div>',
-        unsafe_allow_html=True)
-    mode = st.radio("mode", _MODES, label_visibility="collapsed", key="mode_radio")
-
-    if mode == "💬 Comments":
-        st.markdown('<hr style="margin:8px 0;border-color:#e0e0e0">', unsafe_allow_html=True)
-        st.markdown(
-            '<div style="font-size:13px;font-weight:700;margin-bottom:4px">Filters</div>',
-            unsafe_allow_html=True)
-        st.markdown('<span style="font-size:11px;font-weight:600">Age Group</span>',
-                    unsafe_allow_html=True)
-        sel_age = st.selectbox("Age",
-                               ["All"]+["0-19","20-29","30-39","40-49","50-59","60-69","70+"],
-                               label_visibility="collapsed", key="age_c")
-        st.markdown('<span style="font-size:11px;font-weight:600">Gender</span>',
-                    unsafe_allow_html=True)
-        sel_gender = st.selectbox("Gender",
-                                  ["All"]+sorted(comments["gender"].dropna().unique().tolist()),
-                                  label_visibility="collapsed", key="gen_c")
-    else:
-        sel_age, sel_gender = "All", "All"
-
-    st.markdown(
-        '<hr style="margin:10px 0;border-color:#e0e0e0">'
+        '<div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:4px">'
+        'Welcome!</div>'
+        '<div style="font-size:12px;color:#2c5f7a;line-height:1.7;margin-bottom:8px">'
+        'Explore how Prague residents emotionally map their city alongside '
+        'Copernicus satellite data to reveal where urban quality and lived '
+        'experience align or conflict.'
+        '</div>'
+        '<hr style="margin:8px 0;border-color:#e0e0e0">'
         '<div style="font-size:13px;font-weight:700;margin-bottom:6px">How to Use</div>'
         '<div style="font-size:11px;color:#444;line-height:1.8">'
         '<b>🗺 Bivariate</b> — hex map per topic<br>'
@@ -281,6 +270,24 @@ with col_left:
         '</div>',
         unsafe_allow_html=True
     )
+
+    if mode == "💬 Comments":
+        st.markdown(
+            '<hr style="margin:8px 0;border-color:#e0e0e0">'
+            '<div style="font-size:13px;font-weight:700;margin-bottom:4px">Filters</div>',
+            unsafe_allow_html=True)
+        st.markdown('<span style="font-size:11px;font-weight:600">Age Group</span>',
+                    unsafe_allow_html=True)
+        sel_age = st.selectbox("Age",
+                               ["All"]+["0-19","20-29","30-39","40-49","50-59","60-69","70+"],
+                               label_visibility="collapsed", key="age_c")
+        st.markdown('<span style="font-size:11px;font-weight:600">Gender</span>',
+                    unsafe_allow_html=True)
+        sel_gender = st.selectbox("Gender",
+                                  ["All"]+sorted(comments["gender"].dropna().unique().tolist()),
+                                  label_visibility="collapsed", key="gen_c")
+    else:
+        sel_age, sel_gender = "All", "All"
 
 # ── RIGHT PANEL ────────────────────────────────────────────────────────────────
 with col_right:
