@@ -19,13 +19,8 @@ st.markdown("""
     #MainMenu                      { display:none !important; }
     footer                         { display:none !important; }
 
-    /* Kill page-level scrolling */
+    /* Single rule that kills the gap: page cannot scroll */
     body { overflow:hidden !important; }
-    [data-testid="stAppViewContainer"] { height:100vh !important; overflow:hidden !important; }
-    section[data-testid="stMain"] {
-        height:100vh !important; overflow:hidden !important;
-        padding-top:0 !important; padding-bottom:0 !important;
-    }
     .block-container { padding:0 !important; max-width:100% !important; }
 
     /* ── Header row ── */
@@ -49,35 +44,31 @@ st.markdown("""
         font-size:13px !important; font-weight:600 !important; color:#1a1a2e !important;
     }
 
-    /* ── Main layout: fills remaining viewport after header ── */
-    [data-testid="stHorizontalBlock"]:nth-of-type(2) {
+    /* ── Main layout: adjacent sibling after header, fills remaining height ── */
+    [data-testid="stHorizontalBlock"] + [data-testid="stHorizontalBlock"] {
         height:calc(100vh - 75px) !important;
         align-items:stretch !important; overflow:hidden !important;
     }
-
-    /* Side panels — internal scrollbar */
-    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:first-child {
-        background:#fff; border-right:1px solid #dde;
+    [data-testid="stHorizontalBlock"] + [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:first-child {
+        background:#fff !important; border-right:1px solid #dde !important;
         padding:12px 12px !important;
         overflow-y:auto !important; height:100% !important;
     }
-    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:last-child {
-        background:#fff; border-left:1px solid #dde;
+    [data-testid="stHorizontalBlock"] + [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:last-child {
+        background:#fff !important; border-left:1px solid #dde !important;
         padding:8px 10px !important;
         overflow-y:auto !important; height:100% !important;
     }
-
-    /* Map column */
-    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) {
+    [data-testid="stHorizontalBlock"] + [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2) {
         padding:0 !important; overflow:hidden !important; height:100% !important;
     }
-    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) iframe {
+    [data-testid="stHorizontalBlock"] + [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2) iframe {
         height:100% !important; min-height:380px !important;
         width:100% !important; display:block !important;
     }
-    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) > div,
-    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) > div > div,
-    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) > div > div > div {
+    [data-testid="stHorizontalBlock"] + [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2) > div,
+    [data-testid="stHorizontalBlock"] + [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2) > div > div,
+    [data-testid="stHorizontalBlock"] + [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2) > div > div > div {
         height:100% !important; min-height:0 !important;
     }
 
