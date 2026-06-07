@@ -13,28 +13,22 @@ st.set_page_config(page_title="Prague Mapped by People and Satellites",
 
 st.markdown("""
 <style>
-    /* ── Single-screen layout ─────────────────────────────────── */
     .block-container { padding: 0 !important; max-width: 100% !important; }
-    [data-testid="stMain"]             { overflow: hidden !important; }
-    [data-testid="stAppViewContainer"] { overflow: hidden !important; }
 
-    /* Panels: internal scroll */
+    /* Left panel */
     [data-testid="stColumn"]:first-child {
         border-right: 1px solid #e0e0e0;
-        overflow-y: auto !important;
         background: #fff;
         padding: 10px 10px !important;
     }
+    /* Right panel */
     [data-testid="stColumn"]:last-child {
         border-left: 1px solid #e0e0e0;
-        overflow-y: auto !important;
         background: #fff;
         padding: 6px 8px !important;
     }
-    [data-testid="stColumn"]:nth-child(2) {
-        overflow: hidden !important;
-        padding: 0 !important;
-    }
+    /* Map column */
+    [data-testid="stColumn"]:nth-child(2) { padding: 0 !important; }
 
     /* Mode radio inside map column — floating white pill */
     [data-testid="stColumn"]:nth-child(2) div[data-testid="stRadio"] {
@@ -44,22 +38,16 @@ st.markdown("""
         margin: 6px 8px 0 8px !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.18) !important;
         display: inline-flex !important;
-        border-bottom: none !important;
     }
-
-    /* Topic/compare radios in right panel — plain */
+    /* Topic radio in right panel — plain */
     [data-testid="stColumn"]:last-child div[data-testid="stRadio"] {
         background: transparent !important;
-        padding: 0 !important;
-        margin: 0 !important;
+        padding: 0 !important; margin: 0 !important;
         box-shadow: none !important;
     }
 
-    /* Hide label text on all radios */
     div[data-testid="stRadio"] > label { display: none !important; }
     div[data-testid="stRadio"] label   { font-size: 12px !important; }
-
-    /* Compact widgets */
     div[data-testid="stSelectbox"]       { margin-bottom: 2px !important; }
     div[data-testid="stSelectbox"] label { font-size: 11px !important; }
     p { margin: 0; }
@@ -68,10 +56,12 @@ st.markdown("""
 
 # ── Title + subtitle bar ───────────────────────────────────────────────────────
 st.markdown(
-    '<div style="background:#1a1a2e;color:white;text-align:center;padding:10px 16px 7px">'
-    '<div style="font-size:1.35rem;font-weight:700">Prague Mapped by People and Satellites</div>'
-    '<div style="font-size:0.75rem;opacity:0.75;margin-top:2px">'
-    'Participatory emotional mapping × Copernicus satellite indicators</div>'
+    '<div style="background:#1a1a2e;color:white;text-align:center;padding:10px 16px 8px">'
+    '<div style="font-size:1.35rem;font-weight:700;letter-spacing:0.3px">'
+    'Prague Mapped by People and Satellites</div>'
+    '<div style="font-size:0.78rem;opacity:0.78;margin-top:3px">'
+    'How do Prague residents feel about their city — and what do satellites reveal about the same spaces?'
+    '</div>'
     '</div>',
     unsafe_allow_html=True
 )
