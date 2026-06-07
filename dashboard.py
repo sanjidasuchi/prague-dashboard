@@ -561,24 +561,22 @@ with col_map:
         }
 
         m = folium.Map(location=[50.075, 14.437], zoom_start=11, tiles="CartoDB positron")
-        folium.GeoJson(
-            geojson,
-            style_function=make_style(topic_df),
-            highlight_function=highlight_fn,
-            tooltip=folium.GeoJsonTooltip(
-                fields=["GRID_ID"], aliases=["Cell:"]),
-        ).add_to(m)
+        # Add each hex individually so popup triggers on click anywhere on the polygon
         for feat in geojson["features"]:
-            gid = feat["properties"].get("GRID_ID","")
-            c   = shape_centroid(feat["geometry"])
-            if c:
-                folium.Marker(
-                    location=c,
-                    popup=folium.Popup(
-                        popup_html(gid, topic_df, comments_by_hex, _pct_data),
-                        max_width=320),
-                    icon=folium.DivIcon(html="", icon_size=(0,0))
-                ).add_to(m)
+            gid   = feat["properties"].get("GRID_ID", "")
+            color = topic_df.loc[gid, "color"] if gid in topic_df.index else "#dddddd"
+            folium.GeoJson(
+                feat,
+                style_function=lambda x, c=color: {
+                    "fillColor": c, "color": "#666",
+                    "weight": 0.5, "fillOpacity": 0.75
+                },
+                highlight_function=highlight_fn,
+                tooltip=gid,
+                popup=folium.Popup(
+                    popup_html(gid, topic_df, comments_by_hex, _pct_data),
+                    max_width=320),
+            ).add_to(m)
         m.get_root().html.add_child(folium.Element(
             '<script>setTimeout(function(){'
             'Object.values(window).filter(function(v){'
