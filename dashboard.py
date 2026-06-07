@@ -72,7 +72,7 @@ st.markdown(
     '<div style="font-size:1.6rem;font-weight:800;color:#1a1a2e;letter-spacing:0.3px">'
     'Prague Mapped by People and Satellites</div>'
     '<div style="font-size:0.82rem;color:#2c5f7a;margin-top:5px">'
-    'Participatory emotional mapping meets Copernicus satellite indicators — '
+    'Participatory emotional mapping meets Copernicus satellite indicators: '
     'NDVI, night lights, land surface temperature and NO&#8322;</div>'
     '</td>'
     '<td style="width:40%;vertical-align:middle;text-align:right;'
