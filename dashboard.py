@@ -13,51 +13,54 @@ st.set_page_config(page_title="Prague Mapped by People and Satellites",
 
 st.markdown("""
 <style>
-    /* Hide Streamlit toolbar so our header is not cut off */
-    header[data-testid="stHeader"]          { display: none !important; }
-    [data-testid="stToolbar"]               { display: none !important; }
-    [data-testid="stDecoration"]            { display: none !important; }
-    #MainMenu                               { display: none !important; }
-    footer                                  { display: none !important; }
-
+    header[data-testid="stHeader"]  { display: none !important; }
+    [data-testid="stToolbar"]       { display: none !important; }
+    [data-testid="stDecoration"]    { display: none !important; }
+    #MainMenu                       { display: none !important; }
+    footer                          { display: none !important; }
     .block-container { padding: 0 !important; max-width: 100% !important; }
 
-    /* Left panel */
-    [data-testid="stColumn"]:first-child {
-        border-right: 1px solid #e0e0e0;
-        background: #fff;
-        padding: 10px 10px !important;
-        overflow-y: auto;
-    }
-    /* Right panel */
-    [data-testid="stColumn"]:last-child {
-        border-left: 1px solid #e0e0e0;
-        background: #fff;
-        padding: 6px 8px !important;
-        overflow-y: auto;
-    }
-    /* Map column */
-    [data-testid="stColumn"]:nth-child(2) { padding: 0 !important; }
-
-    /* Mode strip radio (outside columns) — centered */
-    div[data-testid="stRadio"] {
-        background: #f0f2f6;
-        padding: 4px 16px !important;
+    /* ── Header row (first stHorizontalBlock) ── */
+    [data-testid="stHorizontalBlock"]:first-of-type {
+        background: #d6eaf8 !important;
+        border-bottom: 3px solid #85b8d4 !important;
         margin: 0 !important;
-        border-bottom: 1px solid #d0d0d0;
+    }
+    [data-testid="stHorizontalBlock"]:first-of-type [data-testid="stColumn"] {
+        padding: 14px 16px !important;
+        background: transparent !important;
+        border: none !important;
+    }
+    /* Mode radio inside header — semi-transparent pill, centered */
+    [data-testid="stHorizontalBlock"]:first-of-type div[data-testid="stRadio"] {
+        background: rgba(255,255,255,0.6) !important;
+        border-radius: 8px !important;
+        padding: 4px 10px !important;
+        margin: 0 auto !important;
+        border-bottom: none !important;
         display: flex !important;
         justify-content: center !important;
     }
-    div[data-testid="stRadio"] > div {
+    [data-testid="stHorizontalBlock"]:first-of-type div[data-testid="stRadio"] > div {
         justify-content: center !important;
     }
-    /* Topic / compare radio inside right column — override to plain */
-    [data-testid="stColumn"]:last-child div[data-testid="stRadio"] {
-        background: transparent !important;
+
+    /* ── Main content columns (second stHorizontalBlock) ── */
+    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:first-child {
+        border-right: 1px solid #e0e0e0; background: #fff;
+        padding: 10px 10px !important; overflow-y: auto;
+    }
+    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:last-child {
+        border-left: 1px solid #e0e0e0; background: #fff;
+        padding: 6px 8px !important; overflow-y: auto;
+    }
+    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) {
         padding: 0 !important;
-        margin: 0 !important;
-        border-bottom: none !important;
-        box-shadow: none !important;
+    }
+    /* Topic radio in main right panel — plain */
+    [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:last-child div[data-testid="stRadio"] {
+        background: transparent !important; padding: 0 !important;
+        margin: 0 !important; border-bottom: none !important;
     }
 
     div[data-testid="stRadio"] > label { display: none !important; }
@@ -68,31 +71,37 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ── Header bar ────────────────────────────────────────────────────────────────
-st.markdown(
-    '<table style="width:100%;background:#d6eaf8;'
-    'border-collapse:collapse;border-bottom:3px solid #85b8d4">'
-    '<tr>'
-    '<td style="width:60%;vertical-align:middle;padding:18px 16px 18px 20px">'
-    '<div style="font-size:1.6rem;font-weight:800;color:#1a1a2e;letter-spacing:0.3px">'
-    'Prague Mapped by People and Satellites</div>'
-    '<div style="font-size:0.82rem;color:#2c5f7a;margin-top:5px">'
-    'Participatory emotional mapping meets Copernicus satellite indicators: '
-    'NDVI, night lights, land surface temperature and NO&#8322;</div>'
-    '</td>'
-    '<td style="width:40%;vertical-align:middle;text-align:right;'
-    'padding:18px 20px 18px 16px;border-left:1px solid #aac9e0">'
-    '<div style="font-size:0.9rem;font-weight:700;color:#1a1a2e;margin-bottom:4px">'
-    'Welcome!</div>'
-    '<div style="font-size:0.75rem;color:#2c5f7a;line-height:1.6">'
-    'Explore how Prague residents emotionally map their city alongside Copernicus '
-    'satellite data to reveal where urban quality and lived experience align or conflict.'
-    '</div>'
-    '</td>'
-    '</tr>'
-    '</table>',
-    unsafe_allow_html=True
-)
+# ── Header: title (left) | mode buttons (centre) | welcome (right) ────────────
+_MODES = ["🗺 Bivariate", "💬 Comments", "⟺ Compare"]
+h_title, h_mode, h_welcome = st.columns([4, 3, 3])
+
+with h_title:
+    st.markdown(
+        '<div style="font-size:1.6rem;font-weight:800;color:#1a1a2e">'
+        'Prague Mapped by People and Satellites</div>'
+        '<div style="font-size:0.82rem;color:#2c5f7a;margin-top:5px">'
+        'Participatory emotional mapping meets Copernicus satellite indicators: '
+        'NDVI, night lights, land surface temperature and NO&#8322;</div>',
+        unsafe_allow_html=True)
+
+with h_mode:
+    st.markdown(
+        '<div style="text-align:center;font-size:11px;font-weight:600;'
+        'color:#2c5f7a;margin-bottom:6px">Select view</div>',
+        unsafe_allow_html=True)
+    mode = st.radio("mode", _MODES, horizontal=True,
+                    label_visibility="collapsed", key="mode_radio")
+
+with h_welcome:
+    st.markdown(
+        '<div style="text-align:right">'
+        '<div style="font-size:0.9rem;font-weight:700;color:#1a1a2e;margin-bottom:4px">'
+        'Welcome!</div>'
+        '<div style="font-size:0.73rem;color:#2c5f7a;line-height:1.6">'
+        'Explore how Prague residents emotionally map their city alongside Copernicus '
+        'satellite data to reveal where urban quality and lived experience align or conflict.'
+        '</div></div>',
+        unsafe_allow_html=True)
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 BIVAR_COLORS = {
@@ -233,11 +242,6 @@ SENTIMENT_LEG = (
     '<span style="color:#C0392B">&#9679; Negative</span>'
     '</div>'
 )
-
-# ── Mode strip (above columns; defines `mode` before col_right runs) ──────────
-_MODES = ["🗺 Bivariate", "💬 Comments", "⟺ Compare"]
-mode = st.radio("mode", _MODES, horizontal=True,
-                label_visibility="collapsed", key="mode_radio")
 
 # ── LAYOUT ─────────────────────────────────────────────────────────────────────
 col_left, col_map, col_right = st.columns([1.2, 4.6, 1.8])
