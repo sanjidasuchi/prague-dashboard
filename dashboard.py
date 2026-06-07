@@ -391,7 +391,7 @@ with col_map:
                        tiles="CartoDB positron")
         folium.GeoJson(
             geojson,
-            style_function=make_choropleth_style(topic_df, sel_topic),
+            style_function=make_style(topic_df),
             highlight_function=highlight_fn,
             tooltip=folium.GeoJsonTooltip(
                 fields=["GRID_ID"], aliases=["Cell:"]),
@@ -437,14 +437,14 @@ with col_map:
 
     # ── COMPARE MAP — custom swipe, no SideBySideLayers plugin ───────────────────
     elif mode == "⟺ Compare":
-        # Build per-hexagon color dicts using each topic's signature color
-        lc_hex = choropleth_hex_colors(topic_df,  sel_topic)
-        rc_hex = choropleth_hex_colors(topic_df2, sel_topic2)
+        # Build per-hexagon color dicts for both topics
         lc_map = {feat["properties"].get("GRID_ID",""):
-                  lc_hex.get(feat["properties"].get("GRID_ID",""), "#dddddd")
+                  (topic_df.loc[feat["properties"]["GRID_ID"], "color"]
+                   if feat["properties"].get("GRID_ID","") in topic_df.index else "#dddddd")
                   for feat in geojson["features"]}
         rc_map = {feat["properties"].get("GRID_ID",""):
-                  rc_hex.get(feat["properties"].get("GRID_ID",""), "#dddddd")
+                  (topic_df2.loc[feat["properties"]["GRID_ID"], "color"]
+                   if feat["properties"].get("GRID_ID","") in topic_df2.index else "#dddddd")
                   for feat in geojson["features"]}
 
         lc_js  = json.dumps(lc_map)
