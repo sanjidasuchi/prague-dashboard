@@ -175,6 +175,12 @@ def compute_spearman(_hex_topics):
 
 _spearman = compute_spearman(hex_topics)
 
+# ── Pre-compute hex bounds for fit_bounds ─────────────────────────────────────
+_all_coords = [c for feat in geojson["features"]
+               for c in feat["geometry"]["coordinates"][0]]
+_MAP_BOUNDS = [[min(c[1] for c in _all_coords), min(c[0] for c in _all_coords)],
+               [max(c[1] for c in _all_coords), max(c[0] for c in _all_coords)]]
+
 # ── KPI strip (position:fixed so render order doesn't affect visual placement) ─
 st.markdown(
     '<div id="kpi-bar" style="background:#1a1a2e;display:flex;align-items:center;'
@@ -475,8 +481,8 @@ with col_map:
 
     # ── BIVARIATE MAP ──────────────────────────────────────────────────────────
     if mode == "🗺 Bivariate":
-        m = folium.Map(location=[50.075,14.437], zoom_start=11,
-                       tiles="CartoDB positron")
+        m = folium.Map(tiles="CartoDB positron")
+        m.fit_bounds(_MAP_BOUNDS)
         folium.GeoJson(
             geojson,
             style_function=make_style(topic_df),
@@ -499,8 +505,8 @@ with col_map:
 
     # ── COMMENTS MAP ──────────────────────────────────────────────────────────
     elif mode == "💬 Comments":
-        m = folium.Map(location=[50.075,14.437], zoom_start=11,
-                       tiles="CartoDB positron")
+        m = folium.Map(tiles="CartoDB positron")
+        m.fit_bounds(_MAP_BOUNDS)
         cluster = MarkerCluster(max_cluster_radius=50).add_to(m)
         sample  = filt.sample(min(len(filt), 3000), random_state=42)
         for _, row in sample.iterrows():
@@ -596,7 +602,8 @@ var RC = {rc_js};
   h.style.top  = h2+'px';
 }})();
 
-var map = L.map('map',{{zoomControl:true}}).setView([50.075,14.437],11);
+var map = L.map('map',{{zoomControl:true}});
+map.fitBounds({json.dumps(_MAP_BOUNDS)});
 L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
   {{attribution:'&copy; CartoDB',maxZoom:19}}).addTo(map);
 
