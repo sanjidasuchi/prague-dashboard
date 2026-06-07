@@ -326,21 +326,20 @@ with col_map:
 
     # ── COMMENTS MAP ──────────────────────────────────────────────────────────
     elif mode == "💬 Comments":
-        emotion_key = TOPIC_EMOTION.get(sel_topic, sel_topic)
-        topic_filt  = filt[filt["emotion"] == emotion_key]
         m = folium.Map(location=[50.075,14.437], zoom_start=11,
                        tiles="CartoDB positron")
         cluster = MarkerCluster(max_cluster_radius=50).add_to(m)
-        sample  = topic_filt.sample(min(len(topic_filt),2000), random_state=42)
+        sample  = filt.sample(min(len(filt), 3000), random_state=42)
         for _, row in sample.iterrows():
+            ec = EMOTION_COLORS.get(str(row.get("emotion","")), "#888")
             sc = ("#27AE60" if row["sentiment_label"]=="positive"
                   else "#C0392B" if row["sentiment_label"]=="negative" else "#888")
             folium.CircleMarker(
                 location=[row["y"], row["x"]], radius=7,
-                color=sc, fill=True, fill_color=sc,
+                color=ec, fill=True, fill_color=ec,
                 fill_opacity=0.8, weight=1,
                 popup=folium.Popup(
-                    f'<b>{row["emotion"]}</b><br>'
+                    f'<b style="color:{ec}">{row["emotion"]}</b><br>'
                     f'{str(row["comment"])[:180]}<br>'
                     f'<small>Age: {row["age"]} | {row["gender"]} | '
                     f'<span style="color:{sc}">{row["sentiment_label"]}</span></small>',
