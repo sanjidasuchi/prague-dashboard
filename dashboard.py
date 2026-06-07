@@ -569,28 +569,25 @@ with col_right:
             p_str      = "< 0.001" if p_val < 0.001 else f"= {p_val:.3f}"
             bar_w      = int(abs(r_val) * 100)
             bar_color  = "#3b4994" if r_val >= 0 else "#be64ac"
-            st.markdown('<hr style="margin:8px 0;border-color:#eee">', unsafe_allow_html=True)
-            _lc, _rc = st.columns([7, 1])
-            _lc.markdown(
+            st.markdown(
+                '<hr style="margin:8px 0;border-color:#eee">'
                 '<div style="font-size:11px;font-weight:700;color:#555;'
-                'text-transform:uppercase;letter-spacing:.5px;padding-top:5px">'
+                'text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">'
                 'Spearman Correlation</div>',
                 unsafe_allow_html=True)
-            with _rc:
-                with st.popover("ⓘ"):
-                    st.markdown(
-                        "**What is Spearman r?**\n\n"
-                        "Measures how consistently one variable increases "
-                        "as the other does, using ranks (not raw values).\n\n"
-                        "**r scale:**\n"
-                        "| Range | Strength |\n"
-                        "|---|---|\n"
-                        "| 0.0 – 0.3 | Weak |\n"
-                        "| 0.3 – 0.5 | Moderate |\n"
-                        "| > 0.5 | Strong |\n\n"
-                        "**Negative r** → as one variable rises, the other falls.\n\n"
-                        "**p < 0.05** means the result is statistically significant."
-                    )
+            with st.popover("ⓘ  What is Spearman r?"):
+                st.markdown(
+                    "Measures how consistently one variable increases "
+                    "as the other does, using **ranks** (not raw values).\n\n"
+                    "**r ranges from −1 to +1:**\n"
+                    "| Range | Strength |\n"
+                    "|---|---|\n"
+                    "| 0.0 – 0.3 | Weak |\n"
+                    "| 0.3 – 0.5 | Moderate |\n"
+                    "| > 0.5 | Strong |\n\n"
+                    "**Negative r** → as one variable rises, the other falls.\n\n"
+                    "**p < 0.05** = statistically significant result."
+                )
             st.markdown(
                 f'<div style="font-size:22px;font-weight:800;color:#1a1a2e;line-height:1">'
                 f'r = {r_val:+.3f}</div>'
