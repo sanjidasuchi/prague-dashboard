@@ -572,18 +572,16 @@ with col_right:
             st.markdown(
                 '<hr style="margin:8px 0;border-color:#eee">'
                 '<div style="font-size:11px;font-weight:700;color:#555;'
-                'text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">'
-                'Spearman Correlation</div>',
+                'text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:flex;align-items:center;gap:5px">'
+                'Spearman Correlation'
+                '<span title="Measures how consistently one variable increases as the other does, using ranks rather than raw values. '
+                'r ranges from −1 to +1: 0.0–0.3 = weak · 0.3–0.5 = moderate · >0.5 = strong. '
+                'Negative r means as one variable rises the other falls." '
+                'style="display:inline-flex;align-items:center;justify-content:center;'
+                'width:14px;height:14px;border-radius:50%;background:#85b8d4;color:#fff;'
+                'font-size:9px;font-weight:800;cursor:help;flex-shrink:0;line-height:1">i</span>'
+                '</div>',
                 unsafe_allow_html=True)
-            with st.expander("ℹ What does r mean?"):
-                st.markdown(
-                    'Measures how consistently one variable increases as the other does, '
-                    'using ranks rather than raw values.\n\n'
-                    '**r ranges from −1 to +1:**\n'
-                    '- 0.0 – 0.3 = weak\n'
-                    '- 0.3 – 0.5 = moderate\n'
-                    '- > 0.5 = strong\n\n'
-                    'A **negative r** means as one variable rises the other falls.')
             st.markdown(
                 f'<div style="font-size:22px;font-weight:800;color:#1a1a2e;line-height:1">'
                 f'r = {r_val:+.3f}</div>'
