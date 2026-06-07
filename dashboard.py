@@ -177,7 +177,7 @@ with col_right:
         '<table style="border-collapse:collapse;font-size:12px">'
         '<tr>'
         '<td style="writing-mode:vertical-rl;transform:rotate(180deg);'
-        'font-weight:600;padding-right:4px;font-size:11px">Activity ↑</td>'
+        'font-weight:600;padding-right:4px;font-size:11px;vertical-align:middle">Activity ↑</td>'
         '<td><table style="border-collapse:collapse">'
         '<tr>'
         '<td style="font-size:11px;padding:2px 4px;font-weight:600"></td>'
