@@ -1,6 +1,7 @@
 import os, json, tempfile
 import pandas as pd
 from scipy import stats
+import plotly.graph_objects as go
 import folium
 from folium.plugins import MarkerCluster, SideBySideLayers
 import streamlit as st
@@ -174,6 +175,22 @@ def compute_spearman(_hex_topics):
     return out
 
 _spearman = compute_spearman(hex_topics)
+
+@st.cache_data
+def compute_spearman_multi(_hex_topics):
+    out = {}
+    for topic, tdf in _hex_topics.groupby("topic"):
+        out[topic] = {}
+        for ylbl, ydf in tdf.groupby("y_label"):
+            x = pd.to_numeric(ydf["x_val"], errors="coerce")
+            y = pd.to_numeric(ydf["y_val"], errors="coerce")
+            mask = x.notna() & y.notna()
+            if mask.sum() >= 5:
+                r, p = stats.spearmanr(x[mask], y[mask])
+                out[topic][str(ylbl)] = {"r": float(r), "p": float(p)}
+    return out
+
+_spearman_multi = compute_spearman_multi(hex_topics)
 
 # ── Pre-compute hex bounds for fit_bounds ─────────────────────────────────────
 _all_coords = []
@@ -523,6 +540,53 @@ with col_right:
                     f'<div style="font-size:11px;color:#555;margin-top:4px">'
                     f'<b>{sel_topic2}:</b> r = {r2:+.3f}, p {p2_str}</div>',
                     unsafe_allow_html=True)
+
+        # ── Per-indicator bar chart ────────────────────────────────────────────
+        def _ind_bar_chart(topic):
+            sp_multi = _spearman_multi.get(topic, {})
+            if not sp_multi:
+                return
+            lbls   = list(sp_multi.keys())
+            rs     = [sp_multi[l]["r"] for l in lbls]
+            ps     = [sp_multi[l]["p"] for l in lbls]
+            colors = ["#27AE60" if r >= 0 else "#E74C3C" for r in rs]
+            stars  = ["***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else "ns" for p in ps]
+            texts  = [f"r={r:+.3f}<br>{s}" for r, s in zip(rs, stars)]
+            ypad   = 0.12
+            ymin   = min(min(rs) - ypad, -0.25)
+            ymax   = max(max(rs) + ypad,  0.25)
+            fig = go.Figure(go.Bar(
+                x=lbls, y=rs,
+                width=0.35,
+                marker_color=colors,
+                marker_line_width=0,
+                text=texts, textposition="outside",
+                textfont_size=8,
+                cliponaxis=False,
+            ))
+            fig.update_layout(
+                title_text=topic,
+                title_font_size=10,
+                title_x=0.5,
+                yaxis_title="r",
+                yaxis_tickfont_size=8,
+                yaxis_zeroline=True,
+                yaxis_zerolinecolor="#333",
+                yaxis_zerolinewidth=1.5,
+                yaxis_range=[ymin, ymax],
+                xaxis_tickfont_size=8,
+                margin=dict(l=28, r=6, t=26, b=4),
+                height=185,
+                plot_bgcolor="white",
+                paper_bgcolor="white",
+                showlegend=False,
+            )
+            st.plotly_chart(fig, use_container_width=True,
+                            config={"displayModeBar": False})
+
+        _ind_bar_chart(sel_topic)
+        if mode == "⟺ Compare":
+            _ind_bar_chart(sel_topic2)
 
 # ── MAP SECTION ────────────────────────────────────────────────────────────────
 with col_map:
