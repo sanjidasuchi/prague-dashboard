@@ -273,7 +273,12 @@ with col_right:
         '<td></td>'
         '<td colspan="3" style="font-size:11px;font-weight:600;text-align:center;'
         'padding-top:4px">Env. indicator &#8594;</td>'
-        '</tr></table></td></tr></table>',
+        '</tr></table></td></tr></table>'
+        '<div style="font-size:11px;color:#555;margin-top:6px;line-height:1.7">'
+        '<span style="color:#be64ac;font-size:14px">&#9632;</span> High demand, Low env<br>'
+        '<span style="color:#3b4994;font-size:14px">&#9632;</span> Low demand, High env<br>'
+        '<span style="color:#a5b4c2;font-size:14px">&#9632;</span> Average both'
+        '</div>',
         unsafe_allow_html=True
     )
     st.markdown(
