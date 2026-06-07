@@ -223,27 +223,24 @@ with col_right:
 
 # ── LEFT PANEL ─────────────────────────────────────────────────────────────────
 with col_left:
-    st.markdown("""
-    <div style="font-size:12px;color:#333;line-height:1.8;text-align:justify">
-        <b>Welcome</b>
-        <br><br>
-        This dashboard combines Prague residents' emotional mapping responses
-        with Copernicus satellite data — NDVI, imperviousness, night lights,
-        land surface temperature and NO&#8322; — to reveal where urban quality
-        and lived experience align or conflict.
-        <br><br>
-        Select a topic on the right, explore the bivariate hex map,
-        switch to comments to read what residents say, or use
-        compare to swipe between two topics on one map.
-        <br><br>
-        <b>Data Sources</b>
-        <br><br>
-        Emotional Map: emotionalmap.eu (P&#225;nek et al., 2021).
-        NDVI and imperviousness: Copernicus / Sentinel-2 2023.
-        Land surface temperature and NO&#8322;: Google Earth Engine 2023.
-        Population density: GHSL 2020.
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(
+        '<div style="font-size:14px;font-weight:700;margin-bottom:6px">Welcome</div>'
+        '<div style="font-size:11px;color:#333;line-height:1.6;text-align:justify">'
+        'This dashboard combines Prague residents&#39; emotional mapping with '
+        'Copernicus satellite data — NDVI, imperviousness, night lights, LST and NO&#8322; '
+        '— to reveal where urban quality and lived experience align or conflict.<br><br>'
+        'Select a topic, explore the bivariate map, read comments, or swipe to compare two topics.'
+        '</div>'
+        '<div style="font-size:14px;font-weight:700;margin-top:10px;margin-bottom:4px">Data Sources</div>'
+        '<div style="font-size:11px;color:#555;line-height:1.7">'
+        'Emotional Map: emotionalmap.eu<br>'
+        'P&#225;nek et al., 2021<br>'
+        'Copernicus / Sentinel-2 2023<br>'
+        'Google Earth Engine 2023<br>'
+        'GHSL Population 2020'
+        '</div>',
+        unsafe_allow_html=True
+    )
 
 # ── MAP SECTION ────────────────────────────────────────────────────────────────
 with col_map:
