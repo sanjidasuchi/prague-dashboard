@@ -469,6 +469,8 @@ with col_right:
             "Topic", ["All"] + list(EMOTION_COLORS.keys()),
             label_visibility="collapsed", key="topic_c")
     elif mode == "📡 Indicators":
+        sel_topic  = topics[0]
+        sel_topic2 = topics[1]
         st.markdown(
             '<div style="font-size:14px;font-weight:700;margin-bottom:8px">'
             'Satellite Indicators</div>'
