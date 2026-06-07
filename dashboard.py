@@ -427,15 +427,16 @@ with col_map:
         left_layer  = folium.FeatureGroup(name=sel_topic,  overlay=True)
         right_layer = folium.FeatureGroup(name=sel_topic2, overlay=True)
 
+        # Each topic gets its own color gradient so the two sides look distinct
         folium.GeoJson(
             geojson,
-            style_function=make_style(topic_df),
+            style_function=make_choropleth_style(topic_df, sel_topic),
             tooltip=folium.GeoJsonTooltip(
                 fields=["GRID_ID"], aliases=["Cell:"]),
         ).add_to(left_layer)
         folium.GeoJson(
             geojson,
-            style_function=make_style(topic_df2),
+            style_function=make_choropleth_style(topic_df2, sel_topic2),
             tooltip=folium.GeoJsonTooltip(
                 fields=["GRID_ID"], aliases=["Cell:"]),
         ).add_to(right_layer)
@@ -446,18 +447,18 @@ with col_map:
                          layer_right=right_layer).add_to(m)
 
         # Topic labels inside map
+        lc = TOPIC_BASE_COLORS.get(sel_topic,  "#555")
+        rc = TOPIC_BASE_COLORS.get(sel_topic2, "#555")
         m.get_root().html.add_child(folium.Element(
             f'<div style="position:fixed;top:12px;left:60px;z-index:9999;'
-            f'background:rgba(255,255,255,0.92);padding:4px 12px;'
-            f'border-radius:20px;font-size:12px;font-weight:700;'
-            f'border:1px solid #ccc">&#9664; {sel_topic}</div>'
+            f'background:{lc};color:#fff;padding:4px 14px;'
+            f'border-radius:20px;font-size:12px;font-weight:700;">&#9664; {sel_topic}</div>'
             f'<div style="position:fixed;top:12px;right:12px;z-index:9999;'
-            f'background:rgba(255,255,255,0.92);padding:4px 12px;'
-            f'border-radius:20px;font-size:12px;font-weight:700;'
-            f'border:1px solid #ccc">{sel_topic2} &#9654;</div>'
+            f'background:{rc};color:#fff;padding:4px 14px;'
+            f'border-radius:20px;font-size:12px;font-weight:700;">{sel_topic2} &#9654;</div>'
         ))
 
-        # Render via components.html so JS swipe works fully
+        # Render via components.html; inject JS to start divider at centre
         with tempfile.NamedTemporaryFile(suffix=".html", delete=False,
                                          mode="w", encoding="utf-8") as f:
             m.save(f.name)
@@ -465,4 +466,23 @@ with col_map:
         with open(tmp_path, encoding="utf-8") as f:
             html_content = f.read()
         os.unlink(tmp_path)
+
+        center_js = """
+<script>
+(function(){
+    function centerSwipe(){
+        var range = document.querySelector('.leaflet-sbs-range');
+        var container = document.querySelector('.leaflet-container');
+        if(range && container){
+            var w = container.offsetWidth;
+            range.setAttribute('max', w);
+            range.value = Math.round(w / 2);
+            range.dispatchEvent(new Event('input', {bubbles:true}));
+        }
+    }
+    if(document.readyState === 'complete'){ setTimeout(centerSwipe, 300); }
+    else { window.addEventListener('load', function(){ setTimeout(centerSwipe, 300); }); }
+})();
+</script>"""
+        html_content = html_content.replace('</body>', center_js + '\n</body>')
         components.html(html_content, height=900, scrolling=False)
