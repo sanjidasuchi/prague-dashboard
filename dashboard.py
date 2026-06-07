@@ -1,7 +1,6 @@
 import os, json, tempfile
 import pandas as pd
 from scipy import stats
-import plotly.graph_objects as go
 import folium
 from folium.plugins import MarkerCluster, SideBySideLayers
 import streamlit as st
@@ -175,22 +174,6 @@ def compute_spearman(_hex_topics):
     return out
 
 _spearman = compute_spearman(hex_topics)
-
-@st.cache_data
-def compute_spearman_multi(_hex_topics):
-    out = {}
-    for topic, tdf in _hex_topics.groupby("topic"):
-        out[topic] = {}
-        for ylbl, ydf in tdf.groupby("y_label"):
-            x = pd.to_numeric(ydf["x_val"], errors="coerce")
-            y = pd.to_numeric(ydf["y_val"], errors="coerce")
-            mask = x.notna() & y.notna()
-            if mask.sum() >= 5:
-                r, p = stats.spearmanr(x[mask], y[mask])
-                out[topic][str(ylbl)] = {"r": float(r), "p": float(p), "n": int(mask.sum())}
-    return out
-
-_spearman_multi = compute_spearman_multi(hex_topics)
 
 # ── Pre-compute hex bounds for fit_bounds ─────────────────────────────────────
 _all_coords = []
@@ -507,53 +490,39 @@ with col_right:
                                       [t for t in topics if t != sel_topic],
                                       label_visibility="collapsed", key="t2")
 
-        # ── Spearman correlation bar chart ────────────────────────────────────
-        def _spearman_chart(topic, title):
-            sp_multi = _spearman_multi.get(topic, {})
-            if not sp_multi:
-                return
-            lbls   = list(sp_multi.keys())
-            rs     = [sp_multi[l]["r"] for l in lbls]
-            ps     = [sp_multi[l]["p"] for l in lbls]
-            colors = ["#27AE60" if r >= 0 else "#E74C3C" for r in rs]
-            stars  = ["***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else "ns" for p in ps]
-            texts  = [f"r={r:+.3f}<br>{s}" for r, s in zip(rs, stars)]
-            ymin   = min(min(rs) - 0.12, -0.25)
-            ymax   = max(max(rs) + 0.12,  0.25)
-            fig = go.Figure(go.Bar(
-                x=lbls, y=rs,
-                marker_color=colors,
-                text=texts, textposition="outside",
-                textfont=dict(size=8),
-                cliponaxis=False,
-            ))
-            fig.update_layout(
-                title_text=title,
-                title_font_size=10,
-                title_x=0.5,
-                yaxis_title="r",
-                yaxis_tickfont_size=8,
-                yaxis_zeroline=True,
-                yaxis_zerolinecolor="#333",
-                yaxis_zerolinewidth=1.5,
-                yaxis_range=[ymin, ymax],
-                xaxis_tickfont_size=8,
-                margin=dict(l=28, r=6, t=28, b=6),
-                height=190,
-                plot_bgcolor="white",
-                paper_bgcolor="white",
-                showlegend=False,
-            )
-            st.plotly_chart(fig, use_container_width=True,
-                            config={"displayModeBar": False})
-
-        st.markdown('<hr style="margin:8px 0;border-color:#eee">'
-                    '<div style="font-size:11px;font-weight:700;color:#555;'
-                    'text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">'
-                    'Spearman Correlations</div>', unsafe_allow_html=True)
-        _spearman_chart(sel_topic, sel_topic)
+        # ── Spearman correlation card ──────────────────────────────────────────
+        sp = _spearman.get(sel_topic, {})
+        if sp.get("r") is not None:
+            r_val = sp["r"]
+            p_val = sp["p"]
+            sig   = p_val < 0.05
+            sig_color  = "#27AE60" if sig else "#888"
+            sig_label  = "significant ✓" if sig else "not significant"
+            p_str      = "< 0.001" if p_val < 0.001 else f"= {p_val:.3f}"
+            bar_w      = int(abs(r_val) * 100)
+            bar_color  = "#3b4994" if r_val >= 0 else "#be64ac"
+            st.markdown(
+                '<hr style="margin:8px 0;border-color:#eee">'
+                '<div style="font-size:11px;font-weight:700;color:#555;'
+                'text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">'
+                'Spearman Correlation</div>'
+                f'<div style="font-size:22px;font-weight:800;color:#1a1a2e;line-height:1">'
+                f'r = {r_val:+.3f}</div>'
+                f'<div style="background:#eee;border-radius:3px;height:5px;margin:4px 0">'
+                f'<div style="background:{bar_color};width:{bar_w}%;height:5px;border-radius:3px"></div></div>'
+                f'<div style="font-size:11px;color:#555">p {p_str} &nbsp;·&nbsp; '
+                f'<span style="color:{sig_color};font-weight:600">{sig_label}</span></div>'
+                f'<div style="font-size:10px;color:#888;margin-top:2px">n = {sp["n"]} hexagons</div>',
+                unsafe_allow_html=True)
         if mode == "⟺ Compare":
-            _spearman_chart(sel_topic2, sel_topic2)
+            sp2 = _spearman.get(sel_topic2, {})
+            if sp2.get("r") is not None:
+                r2 = sp2["r"]; p2 = sp2["p"]
+                p2_str = "< 0.001" if p2 < 0.001 else f"= {p2:.3f}"
+                st.markdown(
+                    f'<div style="font-size:11px;color:#555;margin-top:4px">'
+                    f'<b>{sel_topic2}:</b> r = {r2:+.3f}, p {p2_str}</div>',
+                    unsafe_allow_html=True)
 
 # ── MAP SECTION ────────────────────────────────────────────────────────────────
 with col_map:
