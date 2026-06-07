@@ -20,17 +20,43 @@ st.markdown("""
     footer                         { display:none !important; }
     .block-container { padding:0 !important; max-width:100% !important; }
 
-    /* Side panels */
+    /* Stretch the columns row to remaining viewport */
+    [data-testid="stHorizontalBlock"] {
+        align-items: stretch !important;
+        min-height: calc(100vh - 82px) !important;
+    }
+
+    /* Side panels — scrollable, full height */
     [data-testid="stColumn"]:first-child {
         background:#fff; border-right:1px solid #dde;
         padding:12px 12px !important; overflow-y:auto;
+        height: calc(100vh - 82px); max-height: calc(100vh - 82px);
     }
     [data-testid="stColumn"]:last-child {
         background:#fff; border-left:1px solid #dde;
         padding:8px 10px !important; overflow-y:auto;
+        height: calc(100vh - 82px); max-height: calc(100vh - 82px);
     }
-    /* Map column */
-    [data-testid="stColumn"]:nth-child(2) { padding:0 !important; }
+
+    /* Map column — clips, no scroll */
+    [data-testid="stColumn"]:nth-child(2) {
+        padding:0 !important; overflow:hidden;
+        height: calc(100vh - 82px); max-height: calc(100vh - 82px);
+    }
+
+    /* Make map iframe fill the column on any screen */
+    [data-testid="stColumn"]:nth-child(2) iframe {
+        height: calc(100vh - 82px) !important;
+        min-height: 380px !important;
+        width: 100% !important;
+        display: block !important;
+    }
+    /* Unwrap Streamlit's nested divs so the iframe can stretch */
+    [data-testid="stColumn"]:nth-child(2) > div,
+    [data-testid="stColumn"]:nth-child(2) > div > div,
+    [data-testid="stColumn"]:nth-child(2) > div > div > div {
+        height: 100% !important;
+    }
 
     /* All radios: plain by default */
     div[data-testid="stRadio"] > label { display:none !important; }
@@ -352,7 +378,7 @@ with col_map:
                         max_width=300),
                     icon=folium.DivIcon(html="", icon_size=(0,0))
                 ).add_to(m)
-        st_folium(m, width=None, height=470, returned_objects=[])
+        st_folium(m, width=None, height=900, returned_objects=[])
 
     # ── COMMENTS MAP ──────────────────────────────────────────────────────────
     elif mode == "💬 Comments":
@@ -378,7 +404,7 @@ with col_map:
             ).add_to(cluster)
         m.get_root().html.add_child(folium.Element(EMOTION_LEG))
         m.get_root().html.add_child(folium.Element(SENTIMENT_LEG))
-        st_folium(m, width=None, height=470, returned_objects=[])
+        st_folium(m, width=None, height=900, returned_objects=[])
 
     # ── COMPARE MAP — swipe on one map via HTML ────────────────────────────────
     elif mode == "⟺ Compare":
@@ -426,4 +452,4 @@ with col_map:
         with open(tmp_path, encoding="utf-8") as f:
             html_content = f.read()
         os.unlink(tmp_path)
-        components.html(html_content, height=470, scrolling=False)
+        components.html(html_content, height=900, scrolling=False)
