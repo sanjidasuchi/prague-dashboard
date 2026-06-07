@@ -19,37 +19,17 @@ st.markdown("""
     #MainMenu                      { display:none !important; }
     footer                         { display:none !important; }
 
-    /* ── Flex column chain: fills viewport, no page scroll ── */
-    body { overflow:hidden !important; height:100vh !important; }
+    /* Kill page-level scrolling */
+    body { overflow:hidden !important; }
+    [data-testid="stAppViewContainer"] { height:100vh !important; overflow:hidden !important; }
+    section[data-testid="stMain"] {
+        height:100vh !important; overflow:hidden !important;
+        padding-top:0 !important; padding-bottom:0 !important;
+    }
+    .block-container { padding:0 !important; max-width:100% !important; }
 
-    [data-testid="stAppViewContainer"] {
-        height:100vh !important;
-        display:flex !important; flex-direction:column !important;
-        overflow:hidden !important;
-    }
-    section[data-testid="stMain"], .main {
-        flex:1 !important; min-height:0 !important;
-        display:flex !important; flex-direction:column !important;
-        overflow:hidden !important;
-    }
-    .block-container {
-        flex:1 !important; min-height:0 !important;
-        padding:0 !important; max-width:100% !important;
-        display:flex !important; flex-direction:column !important;
-        overflow:hidden !important;
-    }
-    /* Streamlit's inner vertical block wrapper */
-    .block-container > div,
-    [data-testid="stVerticalBlock"],
-    [data-testid="stVerticalBlockBorderWrapper"] {
-        flex:1 !important; min-height:0 !important;
-        display:flex !important; flex-direction:column !important;
-        overflow:hidden !important;
-    }
-
-    /* ── Header row: natural height, doesn't grow ── */
+    /* ── Header row ── */
     [data-testid="stHorizontalBlock"]:first-of-type {
-        flex-shrink:0 !important;
         background:#d6eaf8 !important;
         border-bottom:3px solid #85b8d4 !important;
         align-items:center !important; margin:0 !important;
@@ -69,32 +49,28 @@ st.markdown("""
         font-size:13px !important; font-weight:600 !important; color:#1a1a2e !important;
     }
 
-    /* ── Main layout: fills ALL remaining height ── */
+    /* ── Main layout: fills remaining viewport after header ── */
     [data-testid="stHorizontalBlock"]:nth-of-type(2) {
-        flex:1 !important; min-height:0 !important;
-        overflow:hidden !important; align-items:stretch !important;
+        height:calc(100vh - 75px) !important;
+        align-items:stretch !important; overflow:hidden !important;
     }
 
-    /* Side panels — scroll internally */
+    /* Side panels — internal scrollbar */
     [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:first-child {
         background:#fff; border-right:1px solid #dde;
         padding:12px 12px !important;
-        overflow-y:auto !important; overflow-x:hidden !important;
-        height:100% !important;
+        overflow-y:auto !important; height:100% !important;
     }
     [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:last-child {
         background:#fff; border-left:1px solid #dde;
         padding:8px 10px !important;
-        overflow-y:auto !important; overflow-x:hidden !important;
-        height:100% !important;
+        overflow-y:auto !important; height:100% !important;
     }
 
-    /* Map column — clips, no scroll */
+    /* Map column */
     [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) {
         padding:0 !important; overflow:hidden !important; height:100% !important;
     }
-
-    /* Map iframe: fill the column on any screen size */
     [data-testid="stHorizontalBlock"]:nth-of-type(2) [data-testid="stColumn"]:nth-child(2) iframe {
         height:100% !important; min-height:380px !important;
         width:100% !important; display:block !important;
