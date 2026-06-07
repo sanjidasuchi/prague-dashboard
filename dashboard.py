@@ -433,6 +433,8 @@ SENTIMENT_LEG = (
     '</div>'
 )
 
+topics = list(TOPIC_EMOTION.keys())
+
 # ── LAYOUT ─────────────────────────────────────────────────────────────────────
 col_left, col_map, col_right = st.columns([2, 6, 2])
 
@@ -524,7 +526,6 @@ with col_left:
     sel_age, sel_gender, sel_topic_comment = "All", "All", "All"
 
 # ── RIGHT PANEL ────────────────────────────────────────────────────────────────
-topics = list(TOPIC_EMOTION.keys())
 with col_right:
     if mode == "💬 Comments":
         # ── Filters for Comments mode ──────────────────────────────────────────
