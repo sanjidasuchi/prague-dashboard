@@ -22,9 +22,10 @@ st.markdown("""
     body { overflow:hidden !important; }
     .block-container { padding:0 !important; max-width:100% !important; }
 
-    /* ONE stHorizontalBlock — the main 3-column layout. No header block exists. */
+    /* ONE stHorizontalBlock — fills to viewport bottom regardless of header height.
+       body overflow:hidden clips anything past 100vh so no gap is ever visible. */
     [data-testid="stHorizontalBlock"] {
-        height:calc(100vh - 74px) !important;
+        height:100vh !important;
         align-items:stretch !important;
         overflow:hidden !important;
     }
