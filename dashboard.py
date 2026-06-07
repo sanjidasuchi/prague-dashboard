@@ -194,7 +194,7 @@ st.markdown(
     '<div id="kpi-bar" style="background:#1a1a2e;display:flex;align-items:center;'
     'padding:0 28px;gap:36px;height:36px">'
     + _kpi(f"{_total_marks:,}", "total marks")
-    + _kpi(f"{_total_hexes}", "hexagons · H3 res 9")
+    + _kpi(f"{_total_hexes}", "hexagons · ~1 km² each")
     + _kpi(f"{_n_respondents:,}" if isinstance(_n_respondents, int) else _n_respondents, "respondents")
     + _kpi("7", "topics")
     + _kpi("2021", "survey year")
