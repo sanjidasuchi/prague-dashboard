@@ -104,7 +104,7 @@ def _kpi(value, label):
             f'<span style="font-size:10px;color:#9dbdd4;text-transform:uppercase;letter-spacing:.5px">{label}</span>'
             f'</div>')
 
-_MODES = ["🗺 Bivariate", "💬 Comments", "⟺ Compare"]
+_MODES = ["🗺 Bivariate", "💬 Comments", "⟺ Compare", "📡 Indicators"]
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 BIVAR_COLORS = {
@@ -174,6 +174,41 @@ def compute_spearman(_hex_topics):
     return out
 
 _spearman = compute_spearman(hex_topics)
+
+def _ind_scale(lbl):
+    l = lbl.lower()
+    if any(k in l for k in ["ndvi","vegetation","green"]):
+        return ["#edf8e9","#bae4b3","#74c476","#31a354","#006d2c"]
+    if any(k in l for k in ["night","light","viirs","ghsl"]):
+        return ["#fff7bc","#fee391","#fec44f","#fe9929","#cc4c02"]
+    if any(k in l for k in ["temp","lst","heat","surface"]):
+        return ["#fff5f0","#fee0d2","#fc9272","#ef3b2c","#99000d"]
+    if any(k in l for k in ["no2","nitrogen","air","poll"]):
+        return ["#f2f0f7","#dadaeb","#bcbddc","#9e9ac8","#6a51a3"]
+    return ["#f7f7f7","#cccccc","#969696","#636363","#252525"]
+
+@st.cache_data
+def get_indicator_data(_hex_topics):
+    result = []
+    seen = set()
+    for ylbl, grp in _hex_topics.groupby("y_label"):
+        if ylbl in seen:
+            continue
+        seen.add(ylbl)
+        vals = pd.to_numeric(
+            grp.groupby("GRID_ID")["y_val"].first(), errors="coerce")
+        scale = _ind_scale(str(ylbl))
+        try:
+            qs = pd.qcut(vals.rank(method="first"), q=5,
+                         labels=[0,1,2,3,4], duplicates="drop")
+        except Exception:
+            qs = pd.Series(2, index=vals.index)
+        color_map = {gid: scale[int(q)] if pd.notna(q) else "#ddd"
+                     for gid, q in qs.items()}
+        result.append((str(ylbl), color_map))
+    return result[:4]
+
+_indicator_data = get_indicator_data(hex_topics)
 
 # ── Pre-compute hex bounds for fit_bounds ─────────────────────────────────────
 _all_coords = []
@@ -433,6 +468,31 @@ with col_right:
         sel_topic_comment = st.radio(
             "Topic", ["All"] + list(EMOTION_COLORS.keys()),
             label_visibility="collapsed", key="topic_c")
+    elif mode == "📡 Indicators":
+        st.markdown(
+            '<div style="font-size:14px;font-weight:700;margin-bottom:8px">'
+            'Satellite Indicators</div>'
+            '<div style="font-size:11px;color:#555;line-height:1.8;margin-bottom:10px">'
+            'All four Copernicus indicators shown together. '
+            'Pan or zoom any map — all four sync automatically.'
+            '</div>'
+            '<hr style="margin:6px 0;border-color:#eee">',
+            unsafe_allow_html=True)
+        for _lbl, _cm in _indicator_data:
+            _sc = _ind_scale(_lbl)
+            _swatches = "".join(
+                f'<span style="display:inline-block;width:18px;height:10px;'
+                f'background:{c};border-radius:2px;margin-right:1px"></span>'
+                for c in _sc)
+            st.markdown(
+                f'<div style="margin-bottom:8px">'
+                f'<div style="font-size:11px;font-weight:700;color:#1a1a2e;'
+                f'margin-bottom:2px">{_lbl}</div>'
+                f'<div>{_swatches}</div>'
+                f'<div style="display:flex;justify-content:space-between;'
+                f'font-size:9px;color:#aaa;margin-top:1px">'
+                f'<span>low</span><span>high</span></div></div>',
+                unsafe_allow_html=True)
     else:
         # ── Bivariate legend + Topic for Bivariate / Compare modes ────────────
         st.markdown(
@@ -764,3 +824,99 @@ document.addEventListener('touchend',function(){{ drag=false; map.dragging.enabl
 </script>
 </body></html>"""
         components.html(html_content, height=900, scrolling=False)
+
+    # ── INDICATORS MODE — 2×2 synchronized choropleth grid ────────────────────
+    elif mode == "📡 Indicators":
+        _ind = _indicator_data
+        while len(_ind) < 4:
+            _ind = _ind + [("—", {})]
+        _gj_js = json.dumps(geojson)
+        _c_js  = [json.dumps(cm) for _, cm in _ind]
+        _lbls  = [lbl for lbl, _ in _ind]
+        _scales = [_ind_scale(lbl) for lbl in _lbls]
+
+        def _legend_html(scale, lbl):
+            swatches = "".join(
+                f'<span style="display:inline-block;width:14px;height:8px;'
+                f'background:{c};border-radius:1px"></span>'
+                for c in scale)
+            return (f'<div style="position:absolute;bottom:8px;left:8px;z-index:999;'
+                    f'background:rgba(255,255,255,0.92);padding:4px 7px;'
+                    f'border-radius:5px;font-size:10px;font-family:sans-serif">'
+                    f'{swatches}<br><span style="color:#555">low → high {lbl}</span></div>')
+
+        _leg_js = [json.dumps(_legend_html(s, l))
+                   for s, l in zip(_scales, _lbls)]
+
+        _ind_html = f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+html,body{{margin:0;padding:0;height:100%;background:#e8e8e8;}}
+#grid{{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+       height:100%;gap:3px;padding:3px;box-sizing:border-box;}}
+.cell{{position:relative;overflow:hidden;border-radius:4px;}}
+.cell-map{{height:100%;width:100%;}}
+.cell-lbl{{position:absolute;top:8px;left:8px;z-index:999;
+           background:rgba(255,255,255,0.92);padding:3px 9px;border-radius:12px;
+           font-size:11px;font-weight:700;font-family:sans-serif;color:#1a1a2e;
+           pointer-events:none;}}
+</style></head>
+<body>
+<div id="grid">
+  <div class="cell"><div id="m0" class="cell-map"></div>
+    <div class="cell-lbl">{_lbls[0]}</div></div>
+  <div class="cell"><div id="m1" class="cell-map"></div>
+    <div class="cell-lbl">{_lbls[1]}</div></div>
+  <div class="cell"><div id="m2" class="cell-map"></div>
+    <div class="cell-lbl">{_lbls[2]}</div></div>
+  <div class="cell"><div id="m3" class="cell-map"></div>
+    <div class="cell-lbl">{_lbls[3]}</div></div>
+</div>
+<script>
+var GJ = {_gj_js};
+var CM = [{_c_js[0]},{_c_js[1]},{_c_js[2]},{_c_js[3]}];
+var LEGS = [{_leg_js[0]},{_leg_js[1]},{_leg_js[2]},{_leg_js[3]}];
+
+var maps = [];
+var syncing = false;
+
+for (var i = 0; i < 4; i++) {{
+  var m = L.map('m'+i, {{zoomControl: i===0, attributionControl: false}})
+           .setView([50.075, 14.437], 10);
+  L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
+    {{maxZoom:19}}).addTo(m);
+  (function(map, cm, leg) {{
+    L.geoJSON(GJ, {{
+      style: function(f) {{
+        return {{fillColor: cm[f.properties.GRID_ID] || '#ddd',
+                fillOpacity: 0.82, color:'#666', weight:0.4}};
+      }},
+      onEachFeature: function(f, layer) {{
+        var gid = f.properties.GRID_ID || '';
+        layer.bindTooltip(gid, {{sticky:true, className:'leaflet-tooltip-sm'}});
+      }}
+    }}).addTo(map);
+    var div = L.DomUtil.create('div');
+    div.innerHTML = leg;
+    map.getContainer().appendChild(div.firstChild);
+  }})(m, CM[i], LEGS[i]);
+  maps.push(m);
+}}
+
+// Synchronise pan + zoom
+maps.forEach(function(m, idx) {{
+  m.on('moveend', function() {{
+    if (syncing) return;
+    syncing = true;
+    var c = m.getCenter(), z = m.getZoom();
+    maps.forEach(function(o, j) {{
+      if (j !== idx) o.setView(c, z, {{animate:false}});
+    }});
+    syncing = false;
+  }});
+}});
+</script>
+</body></html>"""
+        components.html(_ind_html, height=900, scrolling=False)
