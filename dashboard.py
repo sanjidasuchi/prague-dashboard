@@ -206,6 +206,12 @@ SENTIMENT_LEG = (
     '</div>'
 )
 
+# ── Read mode from session state BEFORE columns so col_right can use it ────────
+_MODES = ["🗺 Bivariate", "💬 Comments", "⟺ Compare"]
+if "mode_radio" not in st.session_state:
+    st.session_state["mode_radio"] = _MODES[0]
+mode = st.session_state["mode_radio"]
+
 # ── LAYOUT ─────────────────────────────────────────────────────────────────────
 col_left, col_map, col_right = st.columns([1.2, 4.6, 1.8])
 
@@ -300,8 +306,9 @@ with col_left:
 
 # ── MAP SECTION ────────────────────────────────────────────────────────────────
 with col_map:
-    mode = st.radio("mode", ["🗺 Bivariate", "💬 Comments", "⟺ Compare"],
-                    horizontal=True, label_visibility="collapsed")
+    mode = st.radio("mode", _MODES,
+                    horizontal=True, label_visibility="collapsed",
+                    key="mode_radio")
     topic_df  = hex_topics[hex_topics["topic"] == sel_topic].set_index("GRID_ID")
     topic_df2 = hex_topics[hex_topics["topic"] == sel_topic2].set_index("GRID_ID")
 
