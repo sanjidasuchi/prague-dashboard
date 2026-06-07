@@ -489,7 +489,7 @@ with col_map:
 
     # ── BIVARIATE MAP ──────────────────────────────────────────────────────────
     if mode == "🗺 Bivariate":
-        m = folium.Map(location=[50, 14.44], zoom_start=11, tiles="CartoDB positron")
+        m = folium.Map(location=[49, 14.44], zoom_start=11, tiles="CartoDB positron")
         folium.GeoJson(
             geojson,
             style_function=make_style(topic_df),
@@ -608,7 +608,7 @@ var RC = {rc_js};
   h.style.top  = h2+'px';
 }})();
 
-var map = L.map('map',{{zoomControl:true}}).setView([50,14.44],11);
+var map = L.map('map',{{zoomControl:true}}).setView([49,14.44],11);
 L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
   {{attribution:'&copy; CartoDB',maxZoom:19}}).addTo(map);
 
