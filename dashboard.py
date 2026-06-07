@@ -175,6 +175,69 @@ def compute_spearman(_hex_topics):
 
 _spearman = compute_spearman(hex_topics)
 
+@st.cache_data
+def compute_insights(_hex_topics, _spearman_dict):
+    out = {}
+    for topic, tdf in _hex_topics.groupby("topic"):
+        n = len(tdf)
+        if n == 0:
+            out[topic] = []
+            continue
+        y_lbl = "the indicator"
+        if "y_label" in tdf.columns:
+            yl = tdf["y_label"].dropna()
+            if len(yl) > 0:
+                y_lbl = str(yl.iloc[0])
+        insights = []
+        # dominant bivariate class
+        if "bivar_class" in tdf.columns:
+            bv     = tdf["bivar_class"].astype(str)
+            counts = bv.value_counts()
+            pct31  = round(int(counts.get("3-1", 0)) / n * 100)
+            pct33  = round(int(counts.get("3-3", 0)) / n * 100)
+            pct13  = round(int(counts.get("1-3", 0)) / n * 100)
+            if pct31 >= 12:
+                insights.append(
+                    f"<b>{pct31}%</b> of {topic.lower()} hexagons show "
+                    f"<b>high activity but low {y_lbl}</b> — "
+                    f"felt experience outpaces environmental quality.")
+            elif pct33 >= 12:
+                insights.append(
+                    f"<b>{pct33}%</b> of hexagons combine high {topic.lower()} "
+                    f"activity with strong {y_lbl} — "
+                    f"lived experience and satellite data align.")
+            elif pct13 >= 12:
+                insights.append(
+                    f"<b>{pct13}%</b> of hexagons show high {y_lbl} "
+                    f"but low {topic.lower()} activity — "
+                    f"environmental quality goes unrecognised by residents.")
+            elif len(counts) > 0:
+                top_pct = round(counts.iloc[0] / n * 100)
+                top_lbl = BIVAR_LABELS.get(counts.index[0], counts.index[0])
+                insights.append(
+                    f"<b>{top_pct}%</b> of {topic.lower()} hexagons fall in "
+                    f"the <i>{top_lbl}</i> class — the dominant pattern.")
+        # correlation strength
+        sp = _spearman_dict.get(topic, {})
+        if sp.get("r") is not None:
+            r, p    = sp["r"], sp["p"]
+            strength  = "strongly" if abs(r) > 0.5 else "moderately" if abs(r) > 0.3 else "weakly"
+            direction = "positively" if r > 0 else "negatively"
+            p_str     = "p < 0.001" if p < 0.001 else f"p = {p:.3f}"
+            if p < 0.05 and abs(r) > 0.15:
+                insights.append(
+                    f"{topic} activity {strength} {direction} correlates "
+                    f"with {y_lbl} (r&nbsp;=&nbsp;{r:+.2f}, {p_str}).")
+            else:
+                insights.append(
+                    f"No significant spatial link between {topic.lower()} marks "
+                    f"and {y_lbl} (r&nbsp;=&nbsp;{r:+.2f}, {p_str}) — "
+                    f"other urban factors may drive the pattern.")
+        out[topic] = insights
+    return out
+
+_insights_all = compute_insights(hex_topics, _spearman)
+
 # ── Pre-compute hex bounds for fit_bounds ─────────────────────────────────────
 _all_coords = []
 for _feat in geojson["features"]:
@@ -384,18 +447,28 @@ with col_left:
         '<div style="font-size:13px;font-weight:700;margin-bottom:4px">View Mode</div>',
         unsafe_allow_html=True)
     mode = st.selectbox("View Mode", _MODES, label_visibility="collapsed", key="mode_radio")
+    # ── Insights callout (topic-aware via session state) ──────────────────────
+    _cur_topic  = st.session_state.get("topic_bv", topics[0])
+    _ins_list   = _insights_all.get(_cur_topic, [])
+    _ins_color  = TOPIC_BASE_COLORS.get(_cur_topic, "#2c5f7a")
+    _ins_html   = (
+        f'<div style="font-size:12px;font-weight:700;color:#1a1a2e;'
+        f'margin-bottom:6px">&#128270; {_cur_topic}</div>'
+    )
+    for _ins in _ins_list:
+        _ins_html += (
+            f'<div style="border-left:3px solid {_ins_color};'
+            f'background:#f7f9fc;padding:7px 9px;border-radius:0 6px 6px 0;'
+            f'margin-bottom:6px;font-size:11px;color:#1a1a2e;line-height:1.6">'
+            f'{_ins}</div>'
+        )
     st.markdown(
         '<hr style="margin:8px 0;border-color:#e0e0e0">'
-        '<div style="font-size:13px;font-weight:700;margin-bottom:6px">How to Use</div>'
-        '<div style="font-size:11px;color:#444;line-height:1.8">'
-        '<b>🗺 Bivariate</b> — hex map per topic<br>'
-        '<b>💬 Comments</b> — residents&#39; comments<br>'
-        '<b>⟺ Compare</b> — swipe two topics side by side<br>'
-        'Click any hexagon for details.'
-        '</div>'
-        '<hr style="margin:10px 0;border-color:#e0e0e0">'
-        '<div style="font-size:13px;font-weight:700;margin-bottom:4px">Data Sources</div>'
-        '<div style="font-size:11px;color:#555;line-height:1.8">'
+        + _ins_html
+        + '<hr style="margin:8px 0;border-color:#e0e0e0">'
+        '<div style="font-size:11px;font-weight:700;color:#555;margin-bottom:3px">'
+        'Data Sources</div>'
+        '<div style="font-size:10px;color:#888;line-height:1.8">'
         'Emotional Map: emotionalmap.eu<br>'
         'P&#225;nek et al., 2021<br>'
         'Copernicus / Sentinel-2 2023<br>'
