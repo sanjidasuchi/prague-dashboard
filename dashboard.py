@@ -1,7 +1,6 @@
 import os, json, tempfile
 import pandas as pd
 from scipy import stats
-import plotly.graph_objects as go
 import folium
 from folium.plugins import MarkerCluster, SideBySideLayers
 import streamlit as st
@@ -175,69 +174,6 @@ def compute_spearman(_hex_topics):
     return out
 
 _spearman = compute_spearman(hex_topics)
-
-@st.cache_data
-def compute_insights(_hex_topics, _spearman_dict):
-    out = {}
-    for topic, tdf in _hex_topics.groupby("topic"):
-        n = len(tdf)
-        if n == 0:
-            out[topic] = []
-            continue
-        y_lbl = "the indicator"
-        if "y_label" in tdf.columns:
-            yl = tdf["y_label"].dropna()
-            if len(yl) > 0:
-                y_lbl = str(yl.iloc[0])
-        insights = []
-        # dominant bivariate class
-        if "bivar_class" in tdf.columns:
-            bv     = tdf["bivar_class"].astype(str)
-            counts = bv.value_counts()
-            pct31  = round(int(counts.get("3-1", 0)) / n * 100)
-            pct33  = round(int(counts.get("3-3", 0)) / n * 100)
-            pct13  = round(int(counts.get("1-3", 0)) / n * 100)
-            if pct31 >= 12:
-                insights.append(
-                    f"<b>{pct31}%</b> of {topic.lower()} hexagons show "
-                    f"<b>high activity but low {y_lbl}</b> — "
-                    f"felt experience outpaces environmental quality.")
-            elif pct33 >= 12:
-                insights.append(
-                    f"<b>{pct33}%</b> of hexagons combine high {topic.lower()} "
-                    f"activity with strong {y_lbl} — "
-                    f"lived experience and satellite data align.")
-            elif pct13 >= 12:
-                insights.append(
-                    f"<b>{pct13}%</b> of hexagons show high {y_lbl} "
-                    f"but low {topic.lower()} activity — "
-                    f"environmental quality goes unrecognised by residents.")
-            elif len(counts) > 0:
-                top_pct = round(counts.iloc[0] / n * 100)
-                top_lbl = BIVAR_LABELS.get(counts.index[0], counts.index[0])
-                insights.append(
-                    f"<b>{top_pct}%</b> of {topic.lower()} hexagons fall in "
-                    f"the <i>{top_lbl}</i> class — the dominant pattern.")
-        # correlation strength
-        sp = _spearman_dict.get(topic, {})
-        if sp.get("r") is not None:
-            r, p    = sp["r"], sp["p"]
-            strength  = "strongly" if abs(r) > 0.5 else "moderately" if abs(r) > 0.3 else "weakly"
-            direction = "positively" if r > 0 else "negatively"
-            p_str     = "p < 0.001" if p < 0.001 else f"p = {p:.3f}"
-            if p < 0.05 and abs(r) > 0.15:
-                insights.append(
-                    f"{topic} activity {strength} {direction} correlates "
-                    f"with {y_lbl} (r&nbsp;=&nbsp;{r:+.2f}, {p_str}).")
-            else:
-                insights.append(
-                    f"No significant spatial link between {topic.lower()} marks "
-                    f"and {y_lbl} (r&nbsp;=&nbsp;{r:+.2f}, {p_str}) — "
-                    f"other urban factors may drive the pattern.")
-        out[topic] = insights
-    return out
-
-_insights_all = compute_insights(hex_topics, _spearman)
 
 # ── Pre-compute hex bounds for fit_bounds ─────────────────────────────────────
 _all_coords = []
@@ -433,8 +369,6 @@ SENTIMENT_LEG = (
     '</div>'
 )
 
-topics = list(TOPIC_EMOTION.keys())
-
 # ── LAYOUT ─────────────────────────────────────────────────────────────────────
 col_left, col_map, col_right = st.columns([2, 6, 2])
 
@@ -450,75 +384,23 @@ with col_left:
         '<div style="font-size:13px;font-weight:700;margin-bottom:4px">View Mode</div>',
         unsafe_allow_html=True)
     mode = st.selectbox("View Mode", _MODES, label_visibility="collapsed", key="mode_radio")
-    # ── Insight scatter chart (topic-aware via session state) ─────────────────
-    _cur_topic = st.session_state.get("topic_bv", topics[0])
-    _ins_color = TOPIC_BASE_COLORS.get(_cur_topic, "#2c5f7a")
-    _tdf_left  = hex_topics[hex_topics["topic"] == _cur_topic]
-    _xp = pd.to_numeric(_tdf_left["y_val"], errors="coerce")  # env → x-axis
-    _yp = pd.to_numeric(_tdf_left["x_val"], errors="coerce")  # activity → y-axis
-    _bvp = _tdf_left["bivar_class"].astype(str)
-    _ylbl = "Indicator"
-    if "y_label" in _tdf_left.columns:
-        _yl = _tdf_left["y_label"].dropna()
-        if len(_yl) > 0:
-            _ylbl = str(_yl.iloc[0])
-
-    _dot_colors = [BIVAR_COLORS.get(b, "#aaa") for b in _bvp]
-    _fig = go.Figure()
-    _fig.add_trace(go.Scatter(
-        x=_xp, y=_yp,
-        mode="markers",
-        marker=dict(color=_dot_colors, size=5, opacity=0.72,
-                    line=dict(width=0)),
-        showlegend=False,
-        hovertemplate=f"{_ylbl}: %{{x:.2f}}<br>Activity: %{{y:.2f}}<extra></extra>",
-    ))
-    _sp = _spearman.get(_cur_topic, {})
-    if _sp.get("r") is not None:
-        _fig.add_annotation(
-            x=0.97, y=0.97, xref="paper", yref="paper",
-            text=f"r = {_sp['r']:+.2f}",
-            showarrow=False, font=dict(size=11, color="#333"),
-            bgcolor="rgba(255,255,255,0.85)", borderpad=3,
-        )
-    _fig.update_layout(
-        height=165,
-        margin=dict(l=32, r=8, t=8, b=32),
-        plot_bgcolor="#f7f9fc",
-        paper_bgcolor="rgba(0,0,0,0)",
-        xaxis=dict(title=dict(text=_ylbl, font=dict(size=9)),
-                   tickfont=dict(size=8), gridcolor="#e4e4e4"),
-        yaxis=dict(title=dict(text="Activity", font=dict(size=9)),
-                   tickfont=dict(size=8), gridcolor="#e4e4e4"),
-    )
-
     st.markdown(
         '<hr style="margin:8px 0;border-color:#e0e0e0">'
-        f'<div style="font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:2px">'
-        f'&#128270; {_cur_topic}</div>',
-        unsafe_allow_html=True)
-    st.plotly_chart(_fig, use_container_width=True,
-                    config={"displayModeBar": False})
-
-    # one-line text insight below the chart
-    _ins_list = _insights_all.get(_cur_topic, [])
-    if _ins_list:
-        st.markdown(
-            f'<div style="border-left:3px solid {_ins_color};background:#f7f9fc;'
-            f'padding:6px 9px;border-radius:0 6px 6px 0;'
-            f'font-size:10px;color:#1a1a2e;line-height:1.6">'
-            f'{_ins_list[0]}</div>',
-            unsafe_allow_html=True)
-
-    st.markdown(
-        '<hr style="margin:8px 0;border-color:#e0e0e0">'
-        '<div style="font-size:10px;font-weight:700;color:#888;margin-bottom:2px">'
-        'Data Sources</div>'
-        '<div style="font-size:10px;color:#aaa;line-height:1.7">'
+        '<div style="font-size:13px;font-weight:700;margin-bottom:6px">How to Use</div>'
+        '<div style="font-size:11px;color:#444;line-height:1.8">'
+        '<b>🗺 Bivariate</b> — hex map per topic<br>'
+        '<b>💬 Comments</b> — residents&#39; comments<br>'
+        '<b>⟺ Compare</b> — swipe two topics side by side<br>'
+        'Click any hexagon for details.'
+        '</div>'
+        '<hr style="margin:10px 0;border-color:#e0e0e0">'
+        '<div style="font-size:13px;font-weight:700;margin-bottom:4px">Data Sources</div>'
+        '<div style="font-size:11px;color:#555;line-height:1.8">'
         'Emotional Map: emotionalmap.eu<br>'
         'P&#225;nek et al., 2021<br>'
         'Copernicus / Sentinel-2 2023<br>'
-        'Google Earth Engine 2023'
+        'Google Earth Engine 2023<br>'
+        'GHSL Population 2020'
         '</div>',
         unsafe_allow_html=True
     )
@@ -526,6 +408,7 @@ with col_left:
     sel_age, sel_gender, sel_topic_comment = "All", "All", "All"
 
 # ── RIGHT PANEL ────────────────────────────────────────────────────────────────
+topics = list(TOPIC_EMOTION.keys())
 with col_right:
     if mode == "💬 Comments":
         # ── Filters for Comments mode ──────────────────────────────────────────
