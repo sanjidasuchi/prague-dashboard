@@ -345,7 +345,7 @@ with col_map:
                     f'<small>Age: {row["age"]} | {row["gender"]} | '
                     f'<span style="color:{sc}">{row["sentiment_label"]}</span></small>',
                     max_width=270),
-                tooltip=row["sentiment_label"],
+                tooltip=str(row["comment"])[:120],
             ).add_to(cluster)
         m.get_root().html.add_child(folium.Element(EMOTION_LEG))
         m.get_root().html.add_child(folium.Element(SENTIMENT_LEG))
