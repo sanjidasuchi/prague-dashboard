@@ -166,6 +166,10 @@ SENTIMENT_LEG = (
     '</div>'
 )
 
+# ── MODE SELECTOR (above columns, no gap above map) ───────────────────────────
+mode = st.radio("mode", ["🗺 Bivariate", "💬 Comments", "⟺ Compare"],
+                horizontal=True, label_visibility="collapsed")
+
 # ── LAYOUT ─────────────────────────────────────────────────────────────────────
 col_left, col_map, col_right = st.columns([1.2, 4.6, 1.8])
 
@@ -219,7 +223,14 @@ with col_right:
         unsafe_allow_html=True)
     topics    = list(TOPIC_EMOTION.keys())
     sel_topic = st.radio("Topic", topics, label_visibility="collapsed")
-    sel_topic2 = [t for t in topics if t != sel_topic][0]  # default, overridden in Compare mode
+    sel_topic2 = [t for t in topics if t != sel_topic][0]
+    if mode == "⟺ Compare":
+        st.markdown(
+            '<div style="font-size:13px;font-weight:700;margin-top:8px;margin-bottom:4px">'
+            'Compare with</div>', unsafe_allow_html=True)
+        sel_topic2 = st.selectbox("Compare with",
+                                  [t for t in topics if t != sel_topic],
+                                  label_visibility="collapsed", key="t2")
 
 # ── LEFT PANEL ─────────────────────────────────────────────────────────────────
 with col_left:
@@ -255,19 +266,6 @@ with col_left:
 
 # ── MAP SECTION ────────────────────────────────────────────────────────────────
 with col_map:
-    mode_col, cmp_col = st.columns([3, 1])
-    with mode_col:
-        mode = st.radio("mode",
-                        ["🗺 Bivariate", "💬 Comments", "⟺ Compare"],
-                        horizontal=True, label_visibility="collapsed")
-    with cmp_col:
-        if mode == "⟺ Compare":
-            sel_topic2 = st.selectbox("⟺",
-                                      [t for t in list(TOPIC_EMOTION.keys()) if t != sel_topic],
-                                      label_visibility="visible", key="t2")
-        else:
-            sel_topic2 = [t for t in list(TOPIC_EMOTION.keys()) if t != sel_topic][0]
-
     topic_df  = hex_topics[hex_topics["topic"] == sel_topic].set_index("GRID_ID")
     topic_df2 = hex_topics[hex_topics["topic"] == sel_topic2].set_index("GRID_ID")
 
@@ -362,13 +360,13 @@ with col_map:
 
         folium.GeoJson(
             geojson,
-            style_function=make_style(topic_df),
+            style_function=make_choropleth_style(topic_df, sel_topic),
             tooltip=folium.GeoJsonTooltip(
                 fields=["GRID_ID"], aliases=["Cell:"]),
         ).add_to(left_layer)
         folium.GeoJson(
             geojson,
-            style_function=make_style(topic_df2),
+            style_function=make_choropleth_style(topic_df2, sel_topic2),
             tooltip=folium.GeoJsonTooltip(
                 fields=["GRID_ID"], aliases=["Cell:"]),
         ).add_to(right_layer)
