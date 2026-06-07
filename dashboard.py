@@ -273,12 +273,7 @@ with col_right:
         '<td></td>'
         '<td colspan="3" style="font-size:11px;font-weight:600;text-align:center;'
         'padding-top:4px">Env. indicator &#8594;</td>'
-        '</tr></table></td></tr></table>'
-        '<div style="font-size:11px;color:#555;margin-top:6px;line-height:1.7">'
-        '<span style="color:#be64ac;font-size:14px">&#9632;</span> High demand, Low env<br>'
-        '<span style="color:#3b4994;font-size:14px">&#9632;</span> Low demand, High env<br>'
-        '<span style="color:#a5b4c2;font-size:14px">&#9632;</span> Average both'
-        '</div>',
+        '</tr></table></td></tr></table>',
         unsafe_allow_html=True
     )
     st.markdown(
@@ -374,7 +369,7 @@ with col_map:
                         max_width=300),
                     icon=folium.DivIcon(html="", icon_size=(0,0))
                 ).add_to(m)
-        st_folium(m, width=None, height=660, returned_objects=[])
+        st_folium(m, width=None, height=520, returned_objects=[])
 
     # ── COMMENTS MAP ──────────────────────────────────────────────────────────
     elif mode == "💬 Comments":
@@ -400,7 +395,7 @@ with col_map:
             ).add_to(cluster)
         m.get_root().html.add_child(folium.Element(EMOTION_LEG))
         m.get_root().html.add_child(folium.Element(SENTIMENT_LEG))
-        st_folium(m, width=None, height=660, returned_objects=[])
+        st_folium(m, width=None, height=520, returned_objects=[])
 
     # ── COMPARE MAP — swipe on one map via HTML ────────────────────────────────
     elif mode == "⟺ Compare":
@@ -450,4 +445,4 @@ with col_map:
         with open(tmp_path, encoding="utf-8") as f:
             html_content = f.read()
         os.unlink(tmp_path)
-        components.html(html_content, height=660, scrolling=False)
+        components.html(html_content, height=520, scrolling=False)
