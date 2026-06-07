@@ -421,70 +421,109 @@ with col_map:
         m.get_root().html.add_child(folium.Element(SENTIMENT_LEG))
         st_folium(m, width=None, height=900, returned_objects=[])
 
-    # ── COMPARE MAP — swipe on one map via HTML ────────────────────────────────
+    # ── COMPARE MAP — custom swipe, no SideBySideLayers plugin ───────────────────
     elif mode == "⟺ Compare":
-        m = folium.Map(location=[50.075,14.437], zoom_start=11,
-                       tiles="CartoDB positron")
+        # Build per-hexagon color dicts for both topics
+        lc_map = {feat["properties"].get("GRID_ID",""):
+                  (topic_df.loc[feat["properties"]["GRID_ID"], "color"]
+                   if feat["properties"].get("GRID_ID","") in topic_df.index else "#dddddd")
+                  for feat in geojson["features"]}
+        rc_map = {feat["properties"].get("GRID_ID",""):
+                  (topic_df2.loc[feat["properties"]["GRID_ID"], "color"]
+                   if feat["properties"].get("GRID_ID","") in topic_df2.index else "#dddddd")
+                  for feat in geojson["features"]}
 
-        left_layer  = folium.FeatureGroup(name=sel_topic,  overlay=True)
-        right_layer = folium.FeatureGroup(name=sel_topic2, overlay=True)
+        lc_js  = json.dumps(lc_map)
+        rc_js  = json.dumps(rc_map)
+        gj_js  = json.dumps(geojson)
+        lbl_l  = sel_topic
+        lbl_r  = sel_topic2
+        col_l  = TOPIC_BASE_COLORS.get(sel_topic,  "#555")
+        col_r  = TOPIC_BASE_COLORS.get(sel_topic2, "#555")
 
-        # Each topic gets its own color gradient so the two sides look distinct
-        folium.GeoJson(
-            geojson,
-            style_function=make_choropleth_style(topic_df, sel_topic),
-            tooltip=folium.GeoJsonTooltip(
-                fields=["GRID_ID"], aliases=["Cell:"]),
-        ).add_to(left_layer)
-        folium.GeoJson(
-            geojson,
-            style_function=make_choropleth_style(topic_df2, sel_topic2),
-            tooltip=folium.GeoJsonTooltip(
-                fields=["GRID_ID"], aliases=["Cell:"]),
-        ).add_to(right_layer)
-
-        left_layer.add_to(m)
-        right_layer.add_to(m)
-        SideBySideLayers(layer_left=left_layer,
-                         layer_right=right_layer).add_to(m)
-
-        # Topic labels inside map
-        lc = TOPIC_BASE_COLORS.get(sel_topic,  "#555")
-        rc = TOPIC_BASE_COLORS.get(sel_topic2, "#555")
-        m.get_root().html.add_child(folium.Element(
-            f'<div style="position:fixed;top:12px;left:60px;z-index:9999;'
-            f'background:{lc};color:#fff;padding:4px 14px;'
-            f'border-radius:20px;font-size:12px;font-weight:700;">&#9664; {sel_topic}</div>'
-            f'<div style="position:fixed;top:12px;right:12px;z-index:9999;'
-            f'background:{rc};color:#fff;padding:4px 14px;'
-            f'border-radius:20px;font-size:12px;font-weight:700;">{sel_topic2} &#9654;</div>'
-        ))
-
-        # Render via components.html; inject JS to start divider at centre
-        with tempfile.NamedTemporaryFile(suffix=".html", delete=False,
-                                         mode="w", encoding="utf-8") as f:
-            m.save(f.name)
-            tmp_path = f.name
-        with open(tmp_path, encoding="utf-8") as f:
-            html_content = f.read()
-        os.unlink(tmp_path)
-
-        center_js = """
+        html_content = f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+html,body{{margin:0;padding:0;height:100%;overflow:hidden;}}
+#map{{height:100vh;width:100%;}}
+#divider{{position:absolute;top:0;bottom:0;left:50%;width:4px;
+          background:#fff;box-shadow:0 0 6px rgba(0,0,0,.5);
+          z-index:900;cursor:ew-resize;transform:translateX(-50%);}}
+#handle{{position:absolute;top:50%;left:50%;
+         transform:translate(-50%,-50%);
+         width:44px;height:44px;background:#fff;border-radius:50%;
+         box-shadow:0 2px 8px rgba(0,0,0,.35);
+         display:flex;align-items:center;justify-content:center;
+         font-size:20px;font-weight:700;cursor:ew-resize;user-select:none;}}
+#lbl-l{{position:absolute;top:12px;left:60px;z-index:950;
+        background:{col_l};color:#fff;padding:4px 14px;
+        border-radius:20px;font-size:12px;font-weight:700;font-family:sans-serif;}}
+#lbl-r{{position:absolute;top:12px;right:12px;z-index:950;
+        background:{col_r};color:#fff;padding:4px 14px;
+        border-radius:20px;font-size:12px;font-weight:700;font-family:sans-serif;}}
+</style>
+</head>
+<body>
+<div id="map">
+  <div id="divider"><div id="handle">&#8596;</div></div>
+  <div id="lbl-l">&#9664; {lbl_l}</div>
+  <div id="lbl-r">{lbl_r} &#9654;</div>
+</div>
 <script>
-(function(){
-    function centerSwipe(){
-        var range = document.querySelector('.leaflet-sbs-range');
-        var container = document.querySelector('.leaflet-container');
-        if(range && container){
-            var w = container.offsetWidth;
-            range.setAttribute('max', w);
-            range.value = Math.round(w / 2);
-            range.dispatchEvent(new Event('input', {bubbles:true}));
-        }
-    }
-    if(document.readyState === 'complete'){ setTimeout(centerSwipe, 300); }
-    else { window.addEventListener('load', function(){ setTimeout(centerSwipe, 300); }); }
-})();
-</script>"""
-        html_content = html_content.replace('</body>', center_js + '\n</body>')
+var GJ      = {gj_js};
+var LC      = {lc_js};
+var RC      = {rc_js};
+
+var map = L.map('map',{{zoomControl:true}}).setView([50.075,14.437],11);
+L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
+  {{attribution:'&copy; CartoDB',maxZoom:19}}).addTo(map);
+
+var leftLayer = L.geoJSON(GJ,{{
+  style:function(f){{
+    return {{fillColor:LC[f.properties.GRID_ID]||'#ddd',fillOpacity:.75,color:'#666',weight:.5}};
+  }}
+}}).addTo(map);
+
+var rightLayer = L.geoJSON(GJ,{{
+  style:function(f){{
+    return {{fillColor:RC[f.properties.GRID_ID]||'#ddd',fillOpacity:.75,color:'#666',weight:.5}};
+  }}
+}}).addTo(map);
+
+var divEl = document.getElementById('divider');
+var mapEl = document.getElementById('map');
+
+function clip(x){{
+  var w = mapEl.offsetWidth;
+  x = Math.max(0, Math.min(x, w));
+  var svgs = map.getPanes().overlayPane.querySelectorAll('svg');
+  if(svgs.length >= 2){{
+    svgs[0].style.clipPath = 'inset(0 '+(100-x/w*100).toFixed(2)+'% 0 0)';
+    svgs[1].style.clipPath = 'inset(0 0 0 '+(x/w*100).toFixed(2)+'%)';
+  }}
+  divEl.style.left = x+'px';
+}}
+
+setTimeout(function(){{ clip(mapEl.offsetWidth/2); }}, 400);
+map.on('move zoom resize', function(){{
+  clip(parseFloat(divEl.style.left)||mapEl.offsetWidth/2);
+}});
+
+var drag=false;
+divEl.addEventListener('mousedown',function(e){{drag=true;e.preventDefault();}});
+document.addEventListener('mousemove',function(e){{
+  if(!drag)return;
+  clip(e.clientX - mapEl.getBoundingClientRect().left);
+}});
+document.addEventListener('mouseup',function(){{drag=false;}});
+divEl.addEventListener('touchstart',function(e){{drag=true;e.preventDefault();}},{{passive:false}});
+document.addEventListener('touchmove',function(e){{
+  if(!drag)return;
+  clip(e.touches[0].clientX - mapEl.getBoundingClientRect().left);
+}},{{passive:false}});
+document.addEventListener('touchend',function(){{drag=false;}});
+</script>
+</body></html>"""
         components.html(html_content, height=900, scrolling=False)
