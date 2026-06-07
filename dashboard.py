@@ -39,12 +39,17 @@ st.markdown("""
     /* Map column */
     [data-testid="stColumn"]:nth-child(2) { padding: 0 !important; }
 
-    /* Mode strip radio (outside columns) */
+    /* Mode strip radio (outside columns) — centered */
     div[data-testid="stRadio"] {
         background: #f0f2f6;
         padding: 4px 16px !important;
         margin: 0 !important;
         border-bottom: 1px solid #d0d0d0;
+        display: flex !important;
+        justify-content: center !important;
+    }
+    div[data-testid="stRadio"] > div {
+        justify-content: center !important;
     }
     /* Topic / compare radio inside right column — override to plain */
     [data-testid="stColumn"]:last-child div[data-testid="stRadio"] {
@@ -374,7 +379,7 @@ with col_map:
                         max_width=300),
                     icon=folium.DivIcon(html="", icon_size=(0,0))
                 ).add_to(m)
-        st_folium(m, width=None, height=520, returned_objects=[])
+        st_folium(m, width=None, height=470, returned_objects=[])
 
     # ── COMMENTS MAP ──────────────────────────────────────────────────────────
     elif mode == "💬 Comments":
@@ -400,7 +405,7 @@ with col_map:
             ).add_to(cluster)
         m.get_root().html.add_child(folium.Element(EMOTION_LEG))
         m.get_root().html.add_child(folium.Element(SENTIMENT_LEG))
-        st_folium(m, width=None, height=520, returned_objects=[])
+        st_folium(m, width=None, height=470, returned_objects=[])
 
     # ── COMPARE MAP — swipe on one map via HTML ────────────────────────────────
     elif mode == "⟺ Compare":
@@ -450,4 +455,4 @@ with col_map:
         with open(tmp_path, encoding="utf-8") as f:
             html_content = f.read()
         os.unlink(tmp_path)
-        components.html(html_content, height=520, scrolling=False)
+        components.html(html_content, height=470, scrolling=False)
