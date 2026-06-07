@@ -508,6 +508,11 @@ with col_map:
                         max_width=300),
                     icon=folium.DivIcon(html="", icon_size=(0,0))
                 ).add_to(m)
+        m.get_root().html.add_child(folium.Element(
+            '<script>setTimeout(function(){'
+            'Object.values(window).filter(function(v){'
+            'return v&&v._leaflet_id;}).forEach(function(mp){'
+            'try{mp.invalidateSize();}catch(e){}});},400);</script>'))
         st_folium(m, width=None, height=900, returned_objects=[])
 
     # ── COMMENTS MAP ──────────────────────────────────────────────────────────
@@ -533,6 +538,11 @@ with col_map:
             ).add_to(cluster)
         m.get_root().html.add_child(folium.Element(EMOTION_LEG))
         m.get_root().html.add_child(folium.Element(SENTIMENT_LEG))
+        m.get_root().html.add_child(folium.Element(
+            '<script>setTimeout(function(){'
+            'Object.values(window).filter(function(v){'
+            'return v&&v._leaflet_id;}).forEach(function(mp){'
+            'try{mp.invalidateSize();}catch(e){}});},400);</script>'))
         st_folium(m, width=None, height=900, returned_objects=[])
 
     # ── COMPARE MAP — custom swipe, no SideBySideLayers plugin ───────────────────
