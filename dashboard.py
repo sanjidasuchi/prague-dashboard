@@ -573,22 +573,7 @@ with col_right:
                 '<hr style="margin:8px 0;border-color:#eee">'
                 '<div style="font-size:11px;font-weight:700;color:#555;'
                 'text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">'
-                'Spearman Correlation</div>',
-                unsafe_allow_html=True)
-            with st.popover("ⓘ  What is Spearman r?"):
-                st.markdown(
-                    "Measures how consistently one variable increases "
-                    "as the other does, using **ranks** (not raw values).\n\n"
-                    "**r ranges from −1 to +1:**\n"
-                    "| Range | Strength |\n"
-                    "|---|---|\n"
-                    "| 0.0 – 0.3 | Weak |\n"
-                    "| 0.3 – 0.5 | Moderate |\n"
-                    "| > 0.5 | Strong |\n\n"
-                    "**Negative r** → as one variable rises, the other falls.\n\n"
-                    "**p < 0.05** = statistically significant result."
-                )
-            st.markdown(
+                'Spearman Correlation</div>'
                 f'<div style="font-size:22px;font-weight:800;color:#1a1a2e;line-height:1">'
                 f'r = {r_val:+.3f}</div>'
                 f'<div style="background:#eee;border-radius:3px;height:5px;margin:4px 0">'
