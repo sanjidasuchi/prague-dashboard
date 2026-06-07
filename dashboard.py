@@ -452,6 +452,9 @@ with col_right:
             label_visibility="collapsed", key="topic_c")
     else:
         # ── Bivariate legend + Topic for Bivariate / Compare modes ────────────
+        _cur_topic = st.session_state.get("topic_bv", topics[0])
+        _ylbl_rows = hex_topics[hex_topics["topic"] == _cur_topic]["y_label"]
+        _ind_lbl   = str(_ylbl_rows.iloc[0]) if len(_ylbl_rows) > 0 else "Env"
         st.markdown(
             '<div style="font-size:14px;font-weight:700;margin-bottom:6px">'
             'Bivariate Legend</div>'
@@ -484,12 +487,12 @@ with col_right:
             '<td style="background:#5ac8c8;width:30px;height:26px;border:1px solid #fff"></td>'
             '</tr><tr>'
             '<td></td>'
-            '<td colspan="3" style="font-size:11px;font-weight:600;text-align:center;'
-            'padding-top:4px">Env. indicator &#8594;</td>'
+            f'<td colspan="3" style="font-size:11px;font-weight:600;text-align:center;'
+            f'padding-top:4px">{_ind_lbl} &#8594;</td>'
             '</tr></table></td></tr></table>'
-            '<div style="font-size:11px;color:#555;margin-top:6px;line-height:1.7">'
-            '<span style="color:#be64ac;font-size:14px">&#9632;</span> High demand, Low env<br>'
-            '<span style="color:#3b4994;font-size:14px">&#9632;</span> Low demand, High env<br>'
+            f'<div style="font-size:11px;color:#555;margin-top:6px;line-height:1.7">'
+            f'<span style="color:#be64ac;font-size:14px">&#9632;</span> High demand, Low {_ind_lbl}<br>'
+            f'<span style="color:#3b4994;font-size:14px">&#9632;</span> Low demand, High {_ind_lbl}<br>'
             '<span style="color:#a5b4c2;font-size:14px">&#9632;</span> Average both'
             '</div>',
             unsafe_allow_html=True
