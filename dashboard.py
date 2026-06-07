@@ -98,25 +98,11 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ── KPI strip ──────────────────────────────────────────────────────────────────
 def _kpi(value, label):
     return (f'<div style="display:flex;align-items:baseline;gap:5px">'
             f'<span style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-.3px">{value}</span>'
             f'<span style="font-size:10px;color:#9dbdd4;text-transform:uppercase;letter-spacing:.5px">{label}</span>'
             f'</div>')
-
-st.markdown(
-    '<div id="kpi-bar" style="background:#1a1a2e;display:flex;align-items:center;'
-    'padding:0 28px;gap:36px;height:36px">'
-    + _kpi(f"{_total_marks:,}", "total marks")
-    + _kpi(f"{_hexes_with_data} / {_total_hexes}", "hexagons covered")
-    + _kpi(f"{_n_respondents:,}" if isinstance(_n_respondents, int) else _n_respondents, "respondents")
-    + _kpi("7", "topics")
-    + _kpi("2021", "survey year")
-    + '</div>'
-    '<div style="height:36px"></div>',
-    unsafe_allow_html=True
-)
 
 _MODES = ["🗺 Bivariate", "💬 Comments", "⟺ Compare"]
 
@@ -188,6 +174,20 @@ def compute_spearman(_hex_topics):
     return out
 
 _spearman = compute_spearman(hex_topics)
+
+# ── KPI strip (position:fixed so render order doesn't affect visual placement) ─
+st.markdown(
+    '<div id="kpi-bar" style="background:#1a1a2e;display:flex;align-items:center;'
+    'padding:0 28px;gap:36px;height:36px">'
+    + _kpi(f"{_total_marks:,}", "total marks")
+    + _kpi(f"{_hexes_with_data} / {_total_hexes}", "hexagons covered")
+    + _kpi(f"{_n_respondents:,}" if isinstance(_n_respondents, int) else _n_respondents, "respondents")
+    + _kpi("7", "topics")
+    + _kpi("2021", "survey year")
+    + '</div>'
+    '<div style="height:36px"></div>',
+    unsafe_allow_html=True
+)
 
 def shape_centroid(geom):
     try:
