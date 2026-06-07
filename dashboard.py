@@ -176,8 +176,14 @@ def compute_spearman(_hex_topics):
 _spearman = compute_spearman(hex_topics)
 
 # ── Pre-compute hex bounds for fit_bounds ─────────────────────────────────────
-_all_coords = [c for feat in geojson["features"]
-               for c in feat["geometry"]["coordinates"][0]]
+_all_coords = []
+for _feat in geojson["features"]:
+    _g = _feat["geometry"]
+    if _g["type"] == "Polygon":
+        _all_coords.extend(_g["coordinates"][0])
+    elif _g["type"] == "MultiPolygon":
+        for _poly in _g["coordinates"]:
+            _all_coords.extend(_poly[0])
 _MAP_BOUNDS = [[min(c[1] for c in _all_coords), min(c[0] for c in _all_coords)],
                [max(c[1] for c in _all_coords), max(c[0] for c in _all_coords)]]
 
