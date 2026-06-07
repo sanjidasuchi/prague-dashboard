@@ -412,7 +412,7 @@ with col_right:
         st.markdown(
             '<div style="font-size:13px;font-weight:700;margin-top:10px;margin-bottom:4px">Topic</div>',
             unsafe_allow_html=True)
-        sel_topic  = st.radio("Topic", topics, label_visibility="collapsed")
+        sel_topic  = st.selectbox("Topic", topics, label_visibility="collapsed", key="topic_bv")
         sel_topic2 = [t for t in topics if t != sel_topic][0]
         if mode == "⟺ Compare":
             st.markdown(
