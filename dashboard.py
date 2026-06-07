@@ -56,28 +56,29 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ── Header bar: title + subtitle (left) | Welcome (right) ─────────────────────
+# ── Header bar ────────────────────────────────────────────────────────────────
 st.markdown(
-    '<div style="background:#1a1a2e;display:flex;justify-content:space-between;'
-    'align-items:flex-start;padding:10px 20px 9px;gap:30px">'
-
-    '<div style="flex:1">'
-    '<div style="font-size:1.25rem;font-weight:700;color:white;letter-spacing:0.2px">'
+    '<table style="width:100%;background:#d6eaf8;padding:10px 20px;'
+    'border-collapse:collapse;border-bottom:2px solid #aac9e0">'
+    '<tr>'
+    '<td style="width:60%;vertical-align:middle;padding:6px 12px 6px 4px">'
+    '<div style="font-size:1.35rem;font-weight:700;color:#1a1a2e">'
     'Prague Mapped by People and Satellites</div>'
-    '<div style="font-size:0.73rem;color:rgba(255,255,255,0.72);margin-top:3px">'
+    '<div style="font-size:0.78rem;color:#2c5f7a;margin-top:3px">'
     'Participatory emotional mapping meets Copernicus satellite indicators — '
-    'NDVI, night lights, LST and NO&#8322;</div>'
-    '</div>'
-
-    '<div style="flex:0 0 320px;text-align:right">'
-    '<div style="font-size:0.85rem;font-weight:700;color:white;margin-bottom:3px">Welcome!</div>'
-    '<div style="font-size:0.72rem;color:rgba(255,255,255,0.78);line-height:1.55;text-align:right">'
+    'NDVI, night lights, land surface temperature and NO&#8322;</div>'
+    '</td>'
+    '<td style="width:40%;vertical-align:middle;text-align:right;'
+    'padding:6px 4px 6px 12px;border-left:1px solid #aac9e0">'
+    '<div style="font-size:0.85rem;font-weight:700;color:#1a1a2e;margin-bottom:3px">'
+    'Welcome!</div>'
+    '<div style="font-size:0.72rem;color:#2c5f7a;line-height:1.55">'
     'Explore how Prague residents emotionally map their city alongside Copernicus '
     'satellite data to reveal where urban quality and lived experience align or conflict.'
     '</div>'
-    '</div>'
-
-    '</div>',
+    '</td>'
+    '</tr>'
+    '</table>',
     unsafe_allow_html=True
 )
 
