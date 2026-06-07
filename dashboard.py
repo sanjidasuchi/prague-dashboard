@@ -569,33 +569,26 @@ with col_right:
             p_str      = "< 0.001" if p_val < 0.001 else f"= {p_val:.3f}"
             bar_w      = int(abs(r_val) * 100)
             bar_color  = "#3b4994" if r_val >= 0 else "#be64ac"
-            _sp_info_html = (
-                '<hr style="margin:8px 0;border-color:#eee">'
-                '<div style="font-size:11px;font-weight:700;color:#555;'
-                'text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;'
-                'display:flex;align-items:center;gap:5px">'
-                'Spearman Correlation'
-                '<span onclick="var d=document.getElementById(\'sp-info-box\');'
-                'd.style.display=d.style.display===\'none\'?\'block\':\'none\';" '
-                'style="display:inline-flex;align-items:center;justify-content:center;'
-                'width:14px;height:14px;border-radius:50%;background:#85b8d4;color:#fff;'
-                'font-size:9px;font-weight:800;cursor:pointer;flex-shrink:0;line-height:1">'
-                'i</span>'
-                '</div>'
-                '<div id="sp-info-box" style="display:none;font-size:10px;color:#333;'
-                'line-height:1.6;border:1px solid #85b8d4;border-radius:4px;'
-                'padding:8px 10px;margin-bottom:6px;background:#f0f7fb">'
-                '<b>What is Spearman r?</b><br>'
-                'Measures how consistently one variable increases as the other does, '
-                'using ranks rather than raw values.<br><br>'
-                '<b>r ranges from −1 to +1:</b><br>'
-                '&nbsp;0.0 – 0.3 &nbsp;= weak<br>'
-                '&nbsp;0.3 – 0.5 &nbsp;= moderate<br>'
-                '&nbsp;&gt; 0.5 &nbsp;&nbsp;&nbsp;&nbsp;= strong<br><br>'
-                'A <b>negative r</b> means as one variable rises the other falls.'
-                '</div>'
-            )
-            st.markdown(_sp_info_html, unsafe_allow_html=True)
+            st.markdown('<hr style="margin:8px 0;border-color:#eee">', unsafe_allow_html=True)
+            _hcol, _icol = st.columns([5, 1])
+            with _hcol:
+                st.markdown(
+                    '<div style="font-size:11px;font-weight:700;color:#555;'
+                    'text-transform:uppercase;letter-spacing:.5px;padding-top:6px">'
+                    'Spearman Correlation</div>',
+                    unsafe_allow_html=True)
+            with _icol:
+                with st.popover("ℹ", use_container_width=True):
+                    st.markdown(
+                        "**What is Spearman r?**\n\n"
+                        "Measures how consistently one variable increases as the other does, "
+                        "using ranks rather than raw values.\n\n"
+                        "**r ranges from −1 to +1:**\n"
+                        "- 0.0 – 0.3 = weak\n"
+                        "- 0.3 – 0.5 = moderate\n"
+                        "- \> 0.5 = strong\n\n"
+                        "A **negative r** means as one variable rises the other falls."
+                    )
             st.markdown(
                 f'<div style="font-size:22px;font-weight:800;color:#1a1a2e;line-height:1">'
                 f'r = {r_val:+.3f}</div>'
