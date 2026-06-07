@@ -76,20 +76,13 @@ st.markdown(
     'display:flex;align-items:center;padding:0">'
     '<table style="width:100%;height:74px;border-collapse:collapse;table-layout:fixed">'
     '<tr>'
-    '<td style="padding:10px 20px;vertical-align:middle;width:62%">'
+    '<td style="padding:10px 30px;vertical-align:middle;width:100%">'
     '<div style="font-size:1.5rem;font-weight:800;color:#1a1a2e;line-height:1.2">'
     'Prague Mapped by People and Satellites</div>'
     '<div style="font-size:0.78rem;color:#2c5f7a;margin-top:3px">'
     'Participatory emotional mapping meets Copernicus satellite indicators: '
     'NDVI, night lights, land surface temperature and NO&#8322;</div>'
     '</td>'
-    '<td style="padding:10px 20px;vertical-align:middle;text-align:right;'
-    'width:38%;border-left:1px solid #aac9e0">'
-    '<div style="font-size:0.9rem;font-weight:700;color:#1a1a2e">Welcome!</div>'
-    '<div style="font-size:0.72rem;color:#2c5f7a;line-height:1.5">'
-    'Explore how Prague residents emotionally map their city alongside '
-    'Copernicus satellite data to reveal where urban quality and lived experience align or conflict.'
-    '</div></td>'
     '</tr></table>'
     '</div>'
     '<div style="height:74px"></div>',
@@ -244,6 +237,12 @@ col_left, col_map, col_right = st.columns([2, 6, 2])
 # ── LEFT PANEL ────────────────────────────────────────────────────────────────
 with col_left:
     st.markdown(
+        '<div style="font-size:14px;font-weight:800;color:#1a1a2e;margin-bottom:2px">Welcome!</div>'
+        '<div style="font-size:11px;color:#2c5f7a;line-height:1.6;margin-bottom:8px">'
+        'Explore how Prague residents emotionally map their city alongside '
+        'Copernicus satellite data to reveal where urban quality and lived experience align or conflict.'
+        '</div>'
+        '<hr style="margin:6px 0;border-color:#e0e0e0">'
         '<div style="font-size:13px;font-weight:700;margin-bottom:4px">View Mode</div>',
         unsafe_allow_html=True)
     mode = st.selectbox("View Mode", _MODES, label_visibility="collapsed", key="mode_radio")
