@@ -451,12 +451,13 @@ html,body{{margin:0;padding:0;height:100%;overflow:hidden;}}
 #divider{{position:absolute;top:0;bottom:0;width:4px;
           background:#fff;box-shadow:0 0 8px rgba(0,0,0,.6);
           z-index:1000;cursor:ew-resize;}}
-#handle{{position:absolute;
+#handle{{position:fixed;
+         top:50%;transform:translate(-50%,-50%);
          width:46px;height:46px;background:#fff;border-radius:50%;
          box-shadow:0 2px 10px rgba(0,0,0,.4);
          display:flex;align-items:center;justify-content:center;
          font-size:22px;font-weight:900;cursor:ew-resize;user-select:none;
-         z-index:1001;transform:translate(-50%,-50%);}}
+         z-index:1001;}}
 #lbl-l{{position:absolute;top:12px;left:60px;z-index:1001;
         background:{col_l};color:#fff;padding:4px 14px;
         border-radius:20px;font-size:12px;font-weight:700;font-family:sans-serif;pointer-events:none;}}
@@ -515,9 +516,8 @@ function clip(x){{
   }}
   /* Divider line */
   divEl.style.left = (x-2)+'px';
-  /* Handle always at visual vertical centre, horizontal at divider */
+  /* Handle follows divider horizontally; top:50% via CSS keeps it vertically centred */
   handleEl.style.left = x+'px';
-  handleEl.style.top  = (window.innerHeight/2)+'px';
 }}
 
 /* Init after layers are fully painted */
