@@ -451,8 +451,7 @@ html,body{{margin:0;padding:0;height:100%;overflow:hidden;}}
 #divider{{position:absolute;top:0;bottom:0;width:4px;
           background:#fff;box-shadow:0 0 8px rgba(0,0,0,.6);
           z-index:1000;cursor:ew-resize;}}
-#handle{{position:fixed;
-         top:50vh;left:50%;
+#handle{{position:absolute;
          transform:translate(-50%,-50%);
          width:46px;height:46px;background:#fff;border-radius:50%;
          box-shadow:0 2px 10px rgba(0,0,0,.4);
@@ -505,20 +504,27 @@ var divEl    = document.getElementById('divider');
 var handleEl = document.getElementById('handle');
 var mapEl    = document.getElementById('map');
 
+/* Read the ACTUAL rendered height of the iframe element in the parent page.
+   window.innerHeight inside an iframe returns the iframe's height= attribute (900),
+   not the CSS-overridden visible height. frameElement.offsetHeight is the truth. */
+function getVisH(){{
+  try {{
+    if(window.frameElement) return window.frameElement.offsetHeight;
+  }} catch(e) {{}}
+  return window.innerHeight;
+}}
+
 function clip(x){{
   var w = mapEl.offsetWidth;
-  var h = mapEl.offsetHeight;
   x = Math.max(2, Math.min(x, w-2));
-  /* Clip the two separate SVG elements */
   var svgs = map.getPanes().overlayPane.querySelectorAll('svg');
   if(svgs.length >= 2){{
     svgs[0].style.clipPath = 'inset(0 '+(100 - x/w*100).toFixed(1)+'% 0 0)';
     svgs[1].style.clipPath = 'inset(0 0 0 '+(x/w*100).toFixed(1)+'%)';
   }}
-  /* Divider line */
   divEl.style.left = (x-2)+'px';
-  /* Handle: only horizontal position updated; top:50vh in CSS keeps it vertically centred */
   handleEl.style.left = x+'px';
+  handleEl.style.top  = Math.round(getVisH()/2)+'px';
 }}
 
 /* Init after layers are fully painted */
