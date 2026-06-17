@@ -881,8 +881,10 @@ function clip(x){{
   handleEl.style.top  = Math.round(getVisH()/2)+'px';
 }}
 
-/* Init after layers are fully painted */
-setTimeout(function(){{ clip(mapEl.offsetWidth/2); }}, 600);
+/* Init clip as soon as map is ready, and again after a short delay */
+map.whenReady(function(){{ clip(mapEl.offsetWidth/2); }});
+setTimeout(function(){{ clip(mapEl.offsetWidth/2); }}, 150);
+setTimeout(function(){{ clip(mapEl.offsetWidth/2); }}, 400);
 map.on('move zoom', function(){{
   var x = parseFloat(divEl.style.left)+2 || mapEl.offsetWidth/2;
   clip(x);
