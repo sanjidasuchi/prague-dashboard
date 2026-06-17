@@ -871,10 +871,21 @@ function getVisH(){{
 function clip(x){{
   var w = mapEl.offsetWidth;
   x = Math.max(2, Math.min(x, w-2));
-  var svgs = map.getPanes().overlayPane.querySelectorAll('svg');
-  if(svgs.length >= 2){{
-    svgs[0].style.clipPath = 'inset(0 '+(100 - x/w*100).toFixed(1)+'% 0 0)';
-    svgs[1].style.clipPath = 'inset(0 0 0 '+(x/w*100).toFixed(1)+'%)';
+  /* Use the renderer containers directly so we know which SVG is left vs right */
+  var lSvg = rL._container;
+  var rSvg = rR._container;
+  if(lSvg && rSvg){{
+    /* getBoundingClientRect gives the true rendered position of the SVG,
+       accounting for Leaflet's padding offset. Convert map-relative x
+       to SVG-relative x by subtracting the SVG's left edge. */
+    var mapRect = mapEl.getBoundingClientRect();
+    var svgRect = lSvg.getBoundingClientRect();
+    var svgW    = svgRect.width;
+    var svgX    = (x + mapRect.left - svgRect.left);
+    var pctL    = (svgX / svgW * 100).toFixed(2);
+    var pctR    = (100 - parseFloat(pctL)).toFixed(2);
+    lSvg.style.clipPath = 'inset(0 '+pctR+'% 0 0)';
+    rSvg.style.clipPath = 'inset(0 0 0 '+pctL+'%)';
   }}
   divEl.style.left = (x-2)+'px';
   handleEl.style.left = x+'px';
