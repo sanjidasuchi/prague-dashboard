@@ -706,7 +706,7 @@ with col_right:
             colors  = ["#27AE60" if r >= 0 else "#E74C3C" for r in rs]
             stars   = ["***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else "ns" for p in ps]
             texts   = [f"r={r:+.3f}<br>{s}" for r, s in zip(rs, stars)]
-            hovers  = [_r_interpret(r, topic, lbl) for r, lbl in zip(rs, lbls)]
+            hovers  = [[f"{r:+.3f}", _r_interpret(r, topic, lbl)] for r, lbl in zip(rs, lbls)]
             ypad    = 0.12
             ymin    = min(min(rs) - ypad, -0.25)
             ymax    = max(max(rs) + ypad,  0.25)
@@ -719,7 +719,7 @@ with col_right:
                 textfont_size=8,
                 cliponaxis=False,
                 customdata=hovers,
-                hovertemplate="<b>%{x}</b><br>r = %{y:+.3f}<br><br>%{customdata}<extra></extra>",
+                hovertemplate="<b>%{x}</b><br>r = %{customdata[0]}<br><br>%{customdata[1]}<extra></extra>",
             ))
             fig.update_layout(
                 title_text=topic,
