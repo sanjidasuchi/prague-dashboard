@@ -79,6 +79,9 @@ st.markdown("""
     div[data-testid="stSelectbox"] label { font-size:11px !important; }
     p { margin:0; }
     #sp-toggle:checked ~ #sp-info-box { display:block !important; }
+    [data-testid="stDeployButton"] { display:none !important; }
+    #MainMenu { visibility:hidden !important; }
+    footer { visibility:hidden !important; }
 </style>
 """, unsafe_allow_html=True)
 
