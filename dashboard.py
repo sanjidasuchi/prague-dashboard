@@ -78,7 +78,6 @@ st.markdown("""
     div[data-testid="stSelectbox"] label { font-size:11px !important; }
     p { margin:0; }
     #sp-toggle:checked ~ #sp-info-box { display:block !important; }
-    #ind-toggle:checked ~ #ind-info-box { display:block !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -616,24 +615,17 @@ with col_right:
             unsafe_allow_html=True
         )
 
-        # Indicator description with "i" toggle
+        # Indicator label + expandable description
+        st.markdown(
+            f'<div style="font-size:10px;font-weight:700;color:#555;margin-top:6px">'
+            f'{_ind_lbl}</div>',
+            unsafe_allow_html=True)
         if _ind_desc:
-            st.markdown(
-                '<input type="checkbox" id="ind-toggle" style="display:none">'
-                f'<div style="font-size:10px;color:#555;margin-top:4px;'
-                f'display:flex;align-items:center;gap:4px">'
-                f'<b>{_ind_lbl}</b>'
-                '<label for="ind-toggle" '
-                'style="display:inline-flex;align-items:center;justify-content:center;'
-                'width:13px;height:13px;border-radius:50%;background:#85b8d4;color:#fff;'
-                'font-size:9px;font-weight:800;cursor:pointer;flex-shrink:0;'
-                'line-height:1;user-select:none">i</label>'
-                '</div>'
-                f'<div id="ind-info-box" style="display:none;font-size:10px;color:#333;'
-                f'line-height:1.6;border:1px solid #85b8d4;border-radius:4px;'
-                f'padding:6px 8px;margin-top:3px;background:#f0f7fb">'
-                f'{_ind_desc}</div>',
-                unsafe_allow_html=True)
+            with st.expander("ℹ️ About this indicator"):
+                st.markdown(
+                    f'<div style="font-size:10px;color:#333;line-height:1.6">'
+                    f'{_ind_desc}</div>',
+                    unsafe_allow_html=True)
 
         # ── Spearman correlation card ──────────────────────────────────────────
         sp = _spearman.get(sel_topic, {})
