@@ -680,11 +680,9 @@ with col_right:
                 f'<div style="background:{bar_color};width:{bar_w}%;height:5px;border-radius:3px"></div></div>'
                 f'<div style="font-size:11px;color:#555">p {p_str} &nbsp;·&nbsp; '
                 f'<span style="color:{sig_color};font-weight:600">{sig_label}</span></div>'
-                f'<div style="font-size:10px;color:#888;margin-top:2px">n = {sp["n"]} hexagons</div>'
-                f'<div style="font-size:10px;color:#2c5f7a;margin-top:5px;line-height:1.4;'
-                f'background:#f0f7fb;border-left:3px solid #85b8d4;padding:4px 6px;border-radius:0 4px 4px 0">'
-                f'{_r_interpret(r_val, sel_topic, _ind_lbl)}</div>',
+                f'<div style="font-size:10px;color:#888;margin-top:2px">n = {sp["n"]} hexagons</div>',
                 unsafe_allow_html=True)
+            st.caption(_r_interpret(r_val, sel_topic, _ind_lbl))
         if mode == "⟺ Compare":
             sp2 = _spearman.get(sel_topic2, {})
             if sp2.get("r") is not None:
