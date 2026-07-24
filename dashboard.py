@@ -726,6 +726,7 @@ with col_right:
                 title_font_size=10,
                 title_x=0.5,
                 yaxis_title="r",
+                yaxis_tickformat=".2f",
                 yaxis_tickfont_size=8,
                 yaxis_zeroline=True,
                 yaxis_zerolinecolor="#333",
