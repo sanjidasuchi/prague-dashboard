@@ -146,13 +146,13 @@ TOPIC_DESCRIPTIONS = {
 
 # Plain-language descriptions for satellite indicators (matched by keyword in y_label)
 INDICATOR_DESCRIPTIONS = {
-    "ndvi":           "NDVI (Normalised Difference Vegetation Index) — measures green vegetation density from satellite. Higher = more vegetation cover.",
-    "imd":            "IMD (Imperviousness Density) — share of land covered by roads and buildings. Higher = more built-up, less green.",
-    "imperviousness": "Imperviousness — share of land covered by hard surfaces. Higher = more urbanised areas.",
-    "night":          "Night Light Intensity — artificial light at night from satellite. Higher = more urbanised or commercially active.",
-    "light":          "Night Light Intensity — artificial light at night from satellite. Higher = more urbanised or commercially active.",
-    "lst":            "LST (Land Surface Temperature) — surface temperature from satellite. Higher = stronger urban heat island effect.",
-    "no2":            "NO₂ (Nitrogen Dioxide) — air pollutant mainly from vehicle emissions. Higher = worse air quality.",
+    "ndvi":           "NDVI (Normalised Difference Vegetation Index) measures green vegetation density from satellite imagery. Higher values mean more vegetation cover.",
+    "imd":            "IMD (Imperviousness Density) measures the share of land covered by roads and buildings. Higher values mean more built-up, less green areas.",
+    "imperviousness": "Imperviousness measures the share of land covered by hard surfaces such as roads and buildings. Higher values indicate more urbanised areas.",
+    "night":          "Night Light Intensity measures artificial light at night captured by satellite. Higher values indicate more urbanised or commercially active areas.",
+    "light":          "Night Light Intensity measures artificial light at night captured by satellite. Higher values indicate more urbanised or commercially active areas.",
+    "lst":            "LST (Land Surface Temperature) is the surface temperature measured by satellite. Higher values indicate stronger urban heat island effects.",
+    "no2":            "NO2 (Nitrogen Dioxide) is an air pollutant mainly produced by vehicle emissions. Higher values indicate worse air quality.",
 }
 
 # ── Load data ──────────────────────────────────────────────────────────────────
