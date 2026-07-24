@@ -135,13 +135,13 @@ TOPIC_EMOTION = {
 
 # Plain-language descriptions shown below each topic selector
 TOPIC_DESCRIPTIONS = {
-    "Safety":         "Residents reported feeling <b>unsafe</b> in these areas — due to poor lighting, isolation, or perceived crime risk.",
-    "Proudness":      "Residents feel <b>civic pride</b> here — linked to historical architecture, well-kept public spaces, or local identity.",
-    "Free Time":      "Residents use these areas for <b>leisure</b> — parks, cafes, sports facilities, and cultural venues.",
-    "Green Space":    "Residents reported a <b>lack</b> of green space here — parks, trees, and nature are perceived as insufficient.",
-    "Need to Change": "Residents feel these areas <b>need improvement</b> — neglected infrastructure, poor maintenance, or unsafe conditions.",
-    "Traffic Hazard": "Residents perceive these areas as <b>dangerous for road users</b> — heavy traffic, poor crossings, or unsafe roads.",
-    "Waste Bin":      "Residents reported <b>waste and cleanliness problems</b> here — litter, insufficient bins, or poor sanitation.",
+    "Safety":         "Residents reported feeling <b>unsafe</b> in these areas due to poor lighting, isolation, or perceived crime risk.",
+    "Proudness":      "Residents feel <b>civic pride</b> here, linked to historical architecture, well-kept public spaces, or local identity.",
+    "Free Time":      "Residents use these areas for <b>leisure</b>, including parks, cafes, sports facilities, and cultural venues.",
+    "Green Space":    "Residents reported a <b>lack</b> of green space here. Parks, trees, and nature are perceived as insufficient.",
+    "Need to Change": "Residents feel these areas <b>need improvement</b>, including neglected infrastructure, poor maintenance, or unsafe conditions.",
+    "Traffic Hazard": "Residents perceive these areas as <b>dangerous for road users</b> due to heavy traffic, poor crossings, or unsafe roads.",
+    "Waste Bin":      "Residents reported <b>waste and cleanliness problems</b> here, including litter, insufficient bins, or poor sanitation.",
 }
 
 # Plain-language descriptions for satellite indicators (matched by keyword in y_label)
