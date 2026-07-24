@@ -96,11 +96,12 @@ topics["Safety"] = saf
 
 # Proudness
 pro = pd.read_csv(os.path.join(BASE, "../proudness/proudness_bivariate.csv"))
+pro = add_bivar(pro, "Point_Count", "Lights_mean")
 pro["topic"] = "Proudness"
 pro["x_label"] = "Proud marks"
-pro["y_label"] = "NDVI"
+pro["y_label"] = "Night Lights"
 pro["x_val"]   = pro["Point_Count"].round(1).astype(str)
-pro["y_val"]   = pro["NDVI_mean"].round(3).astype(str)
+pro["y_val"]   = pro["Lights_mean"].round(3).astype(str)
 topics["Proudness"] = pro
 
 # Free Time
