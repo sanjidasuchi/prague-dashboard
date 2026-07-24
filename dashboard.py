@@ -145,6 +145,7 @@ TOPIC_DESCRIPTIONS = {
 
 # Plain-language descriptions for satellite indicators (matched by keyword in y_label)
 INDICATOR_DESCRIPTIONS = {
+    "composite":      "Composite Environmental Score combines Land Surface Temperature (LST), Nitrogen Dioxide (NO2), and NDVI into a single index. Higher values indicate more stressful urban environments: hotter surfaces, worse air quality, and less vegetation.",
     "ndvi":           "NDVI (Normalised Difference Vegetation Index) measures green vegetation density from satellite imagery. Higher values mean more vegetation cover.",
     "imd":            "IMD (Imperviousness Density) measures the share of land covered by roads and buildings. Higher values mean more built-up, less green areas.",
     "imperviousness": "Imperviousness measures the share of land covered by hard surfaces such as roads and buildings. Higher values indicate more urbanised areas.",
@@ -152,6 +153,8 @@ INDICATOR_DESCRIPTIONS = {
     "light":          "Night Light Intensity measures artificial light at night captured by satellite. Higher values indicate more urbanised or commercially active areas.",
     "lst":            "LST (Land Surface Temperature) is the surface temperature measured by satellite. Higher values indicate stronger urban heat island effects.",
     "no2":            "NO2 (Nitrogen Dioxide) is an air pollutant mainly produced by vehicle emissions. Higher values indicate worse air quality.",
+    "population":     "Population Density measures the number of residents per square kilometre. Higher values indicate more densely populated areas, which can affect the demand for public services such as waste collection.",
+    "pop":            "Population Density measures the number of residents per square kilometre. Higher values indicate more densely populated areas, which can affect the demand for public services such as waste collection.",
 }
 
 # ── Load data ──────────────────────────────────────────────────────────────────
