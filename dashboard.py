@@ -717,7 +717,7 @@ with col_right:
                 textfont_size=8,
                 cliponaxis=False,
                 customdata=hovers,
-                hovertemplate="<b>%{x}</b><br>r = %{customdata[0]}<br><br>%{customdata[1]}<extra></extra>",
+                hovertemplate="<b>%{x}</b><br>r = %{customdata[0]}<extra></extra>",
             ))
             fig.update_layout(
                 title_text=topic,
