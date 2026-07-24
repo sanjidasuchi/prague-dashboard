@@ -78,10 +78,11 @@ st.markdown("""
     div[data-testid="stSelectbox"] label { font-size:11px !important; }
     p { margin:0; }
     #sp-toggle:checked ~ #sp-info-box { display:block !important; }
+    #ind-toggle:checked ~ #ind-info-box { display:block !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Header: position:fixed so it never shifts; spacer pushes doc flow below it ──
+# ── Header ─────────────────────────────────────────────────────────────────────
 st.markdown(
     '<div id="app-header" style="background:#d6eaf8;border-bottom:3px solid #85b8d4;'
     'display:flex;align-items:center;padding:0">'
@@ -130,6 +131,28 @@ TOPIC_EMOTION = {
     "Safety":"Safety","Proudness":"Proudness","Free Time":"Free Time",
     "Green Space":"Green Space","Need to Change":"Need for Change",
     "Traffic Hazard":"Traffic Hazard","Waste Bin":"Waste/Cleanliness",
+}
+
+# Plain-language descriptions shown below each topic selector
+TOPIC_DESCRIPTIONS = {
+    "Safety":         "Residents reported feeling <b>unsafe</b> in these areas — due to poor lighting, isolation, or perceived crime risk.",
+    "Proudness":      "Residents feel <b>civic pride</b> here — linked to historical architecture, well-kept public spaces, or local identity.",
+    "Free Time":      "Residents use these areas for <b>leisure</b> — parks, cafes, sports facilities, and cultural venues.",
+    "Green Space":    "Residents reported a <b>lack</b> of green space here — parks, trees, and nature are perceived as insufficient.",
+    "Need to Change": "Residents feel these areas <b>need improvement</b> — neglected infrastructure, poor maintenance, or unsafe conditions.",
+    "Traffic Hazard": "Residents perceive these areas as <b>dangerous for road users</b> — heavy traffic, poor crossings, or unsafe roads.",
+    "Waste Bin":      "Residents reported <b>waste and cleanliness problems</b> here — litter, insufficient bins, or poor sanitation.",
+}
+
+# Plain-language descriptions for satellite indicators (matched by keyword in y_label)
+INDICATOR_DESCRIPTIONS = {
+    "ndvi":           "NDVI (Normalised Difference Vegetation Index) — measures green vegetation density from satellite. Higher = more vegetation cover.",
+    "imd":            "IMD (Imperviousness Density) — share of land covered by roads and buildings. Higher = more built-up, less green.",
+    "imperviousness": "Imperviousness — share of land covered by hard surfaces. Higher = more urbanised areas.",
+    "night":          "Night Light Intensity — artificial light at night from satellite. Higher = more urbanised or commercially active.",
+    "light":          "Night Light Intensity — artificial light at night from satellite. Higher = more urbanised or commercially active.",
+    "lst":            "LST (Land Surface Temperature) — surface temperature from satellite. Higher = stronger urban heat island effect.",
+    "no2":            "NO₂ (Nitrogen Dioxide) — air pollutant mainly from vehicle emissions. Higher = worse air quality.",
 }
 
 # ── Load data ──────────────────────────────────────────────────────────────────
@@ -241,6 +264,14 @@ def _r_interpret(r, topic, indicator):
         return f"{strength.capitalize()} link: hexagons with {t_desc} tend to have {env_desc}."
     return f"{strength.capitalize()} {'positive' if r > 0 else 'negative'} correlation between {topic} and {indicator}."
 
+def _get_ind_desc(y_label):
+    """Return plain-language description for a satellite indicator label."""
+    lbl = str(y_label).lower()
+    for k, v in INDICATOR_DESCRIPTIONS.items():
+        if k in lbl:
+            return v
+    return ""
+
 # ── Pre-compute hex bounds for fit_bounds ─────────────────────────────────────
 _all_coords = []
 for _feat in geojson["features"]:
@@ -255,7 +286,7 @@ _MAP_BOUNDS = [[min(c[1] for c in _all_coords), min(c[0] for c in _all_coords)],
 _MAP_CENTER = [(_MAP_BOUNDS[0][0] + _MAP_BOUNDS[1][0]) / 2,
                (_MAP_BOUNDS[0][1] + _MAP_BOUNDS[1][1]) / 2]
 
-# ── KPI strip (position:fixed so render order doesn't affect visual placement) ─
+# ── KPI strip ─────────────────────────────────────────────────────────────────
 st.markdown(
     '<div id="kpi-bar" style="background:#1a1a2e;display:flex;align-items:center;'
     'padding:0 28px;gap:36px;height:36px">'
@@ -290,7 +321,6 @@ TOPIC_BASE_COLORS = {
 }
 
 def topic_gradient(topic_name, n=5):
-    """Return n shades from light → topic signature color."""
     base = TOPIC_BASE_COLORS.get(topic_name, "#888888")
     r,g,b = int(base[1:3],16), int(base[3:5],16), int(base[5:7],16)
     return [f"#{int(255+(r-255)*(i+1)/n):02x}"
@@ -298,7 +328,6 @@ def topic_gradient(topic_name, n=5):
             f"{int(255+(b-255)*(i+1)/n):02x}" for i in range(n)]
 
 def make_choropleth_style(tdf, topic_name):
-    """Color hexagons with topic's signature color; vary opacity by activity quintile."""
     base  = TOPIC_BASE_COLORS.get(topic_name, "#888888")
     opacs = [0.15, 0.30, 0.50, 0.70, 0.90]
     vals  = pd.to_numeric(tdf["x_val"], errors="coerce").fillna(0)
@@ -316,7 +345,6 @@ def make_choropleth_style(tdf, topic_name):
     return fn
 
 def choropleth_hex_colors(tdf, topic_name):
-    """Returns {GRID_ID: actual_hex_color} blending white → topic base color by activity quintile."""
     base = TOPIC_BASE_COLORS.get(topic_name, "#888888")
     r0,g0,b0 = int(base[1:3],16), int(base[3:5],16), int(base[5:7],16)
     weights = [0.12, 0.28, 0.50, 0.72, 0.92]
@@ -340,9 +368,9 @@ def _pct_label(p):
     if p >= 20:   return "Below avg"
     return "Bottom 20%"
 
-def popup_html(gid, tdf, cbh, pct_data=None):
+def popup_html(gid, tdf, cbh, pct_data=None, topic=""):
     if gid not in tdf.index:
-        return f"<b>{gid}</b><br>No data"
+        return f"<b>No data for this area</b>"
     row   = tdf.loc[gid]
     bv    = BIVAR_LABELS.get(str(row.get("bivar_class", "")), "—")
     y_lbl = row.get("y_label", "Indicator")
@@ -355,14 +383,12 @@ def popup_html(gid, tdf, cbh, pct_data=None):
     resp_pct  = pct.get("resp_pct", 0)
     resp      = pct.get("resp", row.get("respondents", "—"))
 
-    # one-line interpretation
     interp = ""
     if x_pct is not None:
         act = _pct_label(x_pct).lower()
         env = _pct_label(y_pct).lower() if y_pct is not None else "unknown"
         interp = f"{act} activity &nbsp;·&nbsp; {env} {str(y_lbl).lower()}"
 
-    # respondent mini-bar
     resp_bar = (
         f'<div style="display:flex;align-items:center;gap:5px;margin:3px 0 5px">'
         f'<div style="flex:1;background:#e8e8e8;border-radius:3px;height:6px">'
@@ -372,7 +398,6 @@ def popup_html(gid, tdf, cbh, pct_data=None):
         f'white-space:nowrap">{resp}</span></div>'
     )
 
-    # percentile rank pills
     def pill(label, val, color):
         if val is None: return ""
         return (f'<span style="display:inline-block;background:{color};color:#fff;'
@@ -388,9 +413,12 @@ def popup_html(gid, tdf, cbh, pct_data=None):
         for c in cx
     ]) or "<i style='font-size:10px;color:#aaa'>No comments</i>"
 
+    # Header shows topic name + respondent count instead of internal grid ID
+    header_topic = topic if topic else "Area"
     return (
         f'<div style="font-family:sans-serif;min-width:230px;max-width:310px">'
-        f'<b style="font-size:13px;color:#1a1a2e">{gid}</b>'
+        f'<div style="font-size:13px;font-weight:700;color:#1a1a2e">{header_topic}</div>'
+        f'<div style="font-size:10px;color:#888;margin-bottom:2px">{int(resp)} respondents in this hexagon</div>'
         f'<hr style="margin:4px 0;border-color:#eee">'
         + (f'<div style="font-size:11px;color:#2c5f7a;background:#eef6fb;'
            f'padding:5px 8px;border-radius:5px;margin-bottom:6px;line-height:1.5">'
@@ -411,7 +439,7 @@ def popup_html(gid, tdf, cbh, pct_data=None):
         + f'</div>'
     )
 
-# Emotion legend — bottom-left, Comments mode only
+# Emotion legend — Comments mode
 EMOTION_LEG = (
     '<div style="position:fixed;bottom:30px;left:10px;z-index:9999;'
     'background:rgba(255,255,255,0.93);padding:6px 9px;border-radius:8px;'
@@ -423,7 +451,6 @@ EMOTION_LEG = (
     + '</div>'
 )
 
-# Sentiment legend — bottom-right inside map
 SENTIMENT_LEG = (
     '<div style="position:fixed;bottom:30px;right:10px;z-index:9999;'
     'background:rgba(255,255,255,0.93);padding:6px 9px;border-radius:8px;'
@@ -436,6 +463,7 @@ SENTIMENT_LEG = (
 )
 
 # ── LAYOUT ─────────────────────────────────────────────────────────────────────
+topics = list(TOPIC_EMOTION.keys())
 col_left, col_map, col_right = st.columns([2, 6, 2])
 
 # ── LEFT PANEL ────────────────────────────────────────────────────────────────
@@ -446,12 +474,55 @@ with col_left:
         'Explore how Prague residents emotionally map their city alongside '
         'Copernicus satellite data to reveal where urban quality and lived experience align or conflict.'
         '</div>'
-        '<hr style="margin:6px 0;border-color:#e0e0e0">'
-        '<div style="font-size:13px;font-weight:700;margin-bottom:4px">View Mode</div>',
+        '<hr style="margin:6px 0;border-color:#e0e0e0">',
         unsafe_allow_html=True)
+
+    # ── View Mode ──────────────────────────────────────────────────────────────
+    st.markdown('<div style="font-size:13px;font-weight:700;margin-bottom:4px">View Mode</div>',
+                unsafe_allow_html=True)
     mode = st.selectbox("View Mode", _MODES, label_visibility="collapsed", key="mode_radio")
+
+    # ── Topic selector — always in left panel, below View Mode ────────────────
+    if mode != "💬 Comments":
+        st.markdown(
+            '<hr style="margin:8px 0;border-color:#e0e0e0">'
+            '<div style="font-size:13px;font-weight:700;margin-bottom:4px">Topic</div>',
+            unsafe_allow_html=True)
+        sel_topic = st.selectbox("Topic", topics, label_visibility="collapsed", key="topic_bv")
+        sel_topic2 = [t for t in topics if t != sel_topic][0]
+
+        # Topic description — always visible below the selector
+        _tdesc = TOPIC_DESCRIPTIONS.get(sel_topic, "")
+        if _tdesc:
+            st.markdown(
+                f'<div style="font-size:10px;color:#444;line-height:1.6;'
+                f'background:#f0f7fb;border-left:3px solid #85b8d4;'
+                f'padding:5px 7px;border-radius:0 4px 4px 0;margin-top:3px">'
+                f'{_tdesc}</div>',
+                unsafe_allow_html=True)
+
+        # Second topic for Compare mode
+        if mode == "⟺ Compare":
+            st.markdown(
+                '<div style="font-size:13px;font-weight:700;margin-top:10px;margin-bottom:4px">'
+                'Compare with</div>', unsafe_allow_html=True)
+            sel_topic2 = st.selectbox("Compare with",
+                                      [t for t in topics if t != sel_topic],
+                                      label_visibility="collapsed", key="t2")
+            _tdesc2 = TOPIC_DESCRIPTIONS.get(sel_topic2, "")
+            if _tdesc2:
+                st.markdown(
+                    f'<div style="font-size:10px;color:#444;line-height:1.6;'
+                    f'background:#f0f7fb;border-left:3px solid #85b8d4;'
+                    f'padding:5px 7px;border-radius:0 4px 4px 0;margin-top:3px">'
+                    f'{_tdesc2}</div>',
+                    unsafe_allow_html=True)
+    else:
+        sel_topic  = topics[0]
+        sel_topic2 = topics[1]
+
     st.markdown(
-        '<hr style="margin:8px 0;border-color:#e0e0e0">'
+        '<hr style="margin:10px 0;border-color:#e0e0e0">'
         '<div style="font-size:13px;font-weight:700;margin-bottom:6px">How to Use</div>'
         '<div style="font-size:11px;color:#444;line-height:1.8">'
         '<b>🗺 Bivariate</b> — hex map per topic<br>'
@@ -474,12 +545,8 @@ with col_left:
     sel_age, sel_gender, sel_topic_comment = "All", "All", "All"
 
 # ── RIGHT PANEL ────────────────────────────────────────────────────────────────
-topics = list(TOPIC_EMOTION.keys())
 with col_right:
     if mode == "💬 Comments":
-        # ── Filters for Comments mode ──────────────────────────────────────────
-        sel_topic  = topics[0]
-        sel_topic2 = topics[1]
         st.markdown(
             '<div style="font-size:14px;font-weight:700;margin-bottom:8px">Filters</div>',
             unsafe_allow_html=True)
@@ -500,12 +567,14 @@ with col_right:
             "Topic", ["All"] + list(EMOTION_COLORS.keys()),
             label_visibility="collapsed", key="topic_c")
     else:
-        # ── Bivariate legend + Topic for Bivariate / Compare modes ────────────
-        _cur_topic = st.session_state.get("topic_bv", topics[0])
-        _ylbl_rows = hex_topics[hex_topics["topic"] == _cur_topic]["y_label"]
+        # ── Bivariate legend ───────────────────────────────────────────────────
+        _ylbl_rows = hex_topics[hex_topics["topic"] == sel_topic]["y_label"]
         _ind_lbl   = str(_ylbl_rows.iloc[0]) if len(_ylbl_rows) > 0 else "Env"
+        _ind_desc  = _get_ind_desc(_ind_lbl)
+
         st.markdown(
-            '<div style="font-size:14px;font-weight:700;margin-bottom:6px">'
+            '<div style="font-size:14px;font-weight:700;margin-bottom:6px;'
+            'display:flex;align-items:center;gap:5px">'
             'Bivariate Legend</div>'
             '<table style="border-collapse:collapse;font-size:12px">'
             '<tr>'
@@ -546,18 +615,25 @@ with col_right:
             '</div>',
             unsafe_allow_html=True
         )
-        st.markdown(
-            '<div style="font-size:13px;font-weight:700;margin-top:10px;margin-bottom:4px">Topic</div>',
-            unsafe_allow_html=True)
-        sel_topic  = st.selectbox("Topic", topics, label_visibility="collapsed", key="topic_bv")
-        sel_topic2 = [t for t in topics if t != sel_topic][0]
-        if mode == "⟺ Compare":
+
+        # Indicator description with "i" toggle
+        if _ind_desc:
             st.markdown(
-                '<div style="font-size:13px;font-weight:700;margin-top:8px;margin-bottom:4px">'
-                'Compare with</div>', unsafe_allow_html=True)
-            sel_topic2 = st.selectbox("Compare with",
-                                      [t for t in topics if t != sel_topic],
-                                      label_visibility="collapsed", key="t2")
+                '<input type="checkbox" id="ind-toggle" style="display:none">'
+                f'<div style="font-size:10px;color:#555;margin-top:4px;'
+                f'display:flex;align-items:center;gap:4px">'
+                f'<b>{_ind_lbl}</b>'
+                '<label for="ind-toggle" '
+                'style="display:inline-flex;align-items:center;justify-content:center;'
+                'width:13px;height:13px;border-radius:50%;background:#85b8d4;color:#fff;'
+                'font-size:9px;font-weight:800;cursor:pointer;flex-shrink:0;'
+                'line-height:1;user-select:none">i</label>'
+                '</div>'
+                f'<div id="ind-info-box" style="display:none;font-size:10px;color:#333;'
+                f'line-height:1.6;border:1px solid #85b8d4;border-radius:4px;'
+                f'padding:6px 8px;margin-top:3px;background:#f0f7fb">'
+                f'{_ind_desc}</div>',
+                unsafe_allow_html=True)
 
         # ── Spearman correlation card ──────────────────────────────────────────
         sp = _spearman.get(sel_topic, {})
@@ -589,12 +665,16 @@ with col_right:
                 '<b>What is Spearman r?</b><br>'
                 'Measures how consistently one variable increases as the other does, '
                 'using ranks rather than raw values.<br><br>'
-                '<b>r ranges from −1 to +1:</b><br>'
-                '&nbsp;0.0 – 0.3 &nbsp;= weak<br>'
-                '&nbsp;0.3 – 0.5 &nbsp;= moderate<br>'
-                '&nbsp;&gt;0.5 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= strong<br><br>'
-                '<b>Negative r</b> means as one variable rises the other falls.<br>'
-                '<b>p &lt; 0.05</b> means the result is statistically significant.'
+                '<b>How to read the value:</b><br>'
+                'r = +1 &nbsp;→ perfect positive relationship (both go up together)<br>'
+                'r = −1 &nbsp;→ perfect negative relationship (one goes up, other goes down)<br>'
+                'r = &nbsp;0 &nbsp;→ no relationship<br><br>'
+                '<b>Strength guide:</b><br>'
+                '&nbsp;0.0 – 0.3 &nbsp;= weak &nbsp;(small tendency)<br>'
+                '&nbsp;0.3 – 0.5 &nbsp;= moderate &nbsp;(clear pattern)<br>'
+                '&nbsp;&gt;0.5 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= strong &nbsp;(consistent pattern)<br><br>'
+                '<b>p &lt; 0.05</b> means the result is statistically significant '
+                '(unlikely to be due to chance).'
                 '</div>',
                 unsafe_allow_html=True)
             st.markdown(
@@ -688,7 +768,6 @@ with col_map:
 
     # ── BIVARIATE MAP ──────────────────────────────────────────────────────────
     if mode == "🗺 Bivariate":
-        # Pre-compute percentile ranks for popup enrichment
         _px = pd.to_numeric(topic_df["x_val"], errors="coerce")
         _py = pd.to_numeric(topic_df["y_val"], errors="coerce")
         _pr = pd.to_numeric(topic_df["respondents"], errors="coerce").fillna(0)
@@ -705,11 +784,24 @@ with col_map:
             for gid in topic_df.index
         }
 
-        m = folium.Map(location=[50.075, 14.437], zoom_start=11, tiles="CartoDB positron")
-        # Add each hex individually so popup triggers on click anywhere on the polygon
+        # fit_bounds ensures the full hexagon grid is always centred and visible
+        m = folium.Map(tiles="CartoDB positron", control_scale=True)
+        m.fit_bounds(_MAP_BOUNDS)
+
         for feat in geojson["features"]:
             gid   = feat["properties"].get("GRID_ID", "")
             color = topic_df.loc[gid, "color"] if gid in topic_df.index else "#dddddd"
+            # Tooltip shows activity classification instead of raw grid ID
+            tip_text = ""
+            if gid in topic_df.index and gid in _pct_data:
+                xp = _pct_data[gid].get("x_pct")
+                yp = _pct_data[gid].get("y_pct")
+                _ylbl_rows = hex_topics[hex_topics["topic"] == sel_topic]["y_label"]
+                _ind_lbl_tip = str(_ylbl_rows.iloc[0]) if len(_ylbl_rows) > 0 else "Env"
+                tip_text = (f"{_pct_label(xp)} activity · {_pct_label(yp)} {_ind_lbl_tip}"
+                            if xp is not None else gid)
+            else:
+                tip_text = "No data"
             folium.GeoJson(
                 feat,
                 style_function=lambda x, c=color: {
@@ -717,9 +809,9 @@ with col_map:
                     "weight": 0.5, "fillOpacity": 0.75
                 },
                 highlight_function=highlight_fn,
-                tooltip=gid,
+                tooltip=tip_text,
                 popup=folium.Popup(
-                    popup_html(gid, topic_df, comments_by_hex, _pct_data),
+                    popup_html(gid, topic_df, comments_by_hex, _pct_data, sel_topic),
                     max_width=320),
             ).add_to(m)
         m.get_root().html.add_child(folium.Element(
@@ -731,7 +823,8 @@ with col_map:
 
     # ── COMMENTS MAP ──────────────────────────────────────────────────────────
     elif mode == "💬 Comments":
-        m = folium.Map(location=[50.075, 14.437], zoom_start=11, tiles="CartoDB positron")
+        m = folium.Map(tiles="CartoDB positron", control_scale=True)
+        m.fit_bounds(_MAP_BOUNDS)
         cluster = MarkerCluster(max_cluster_radius=50).add_to(m)
         sample  = filt.sample(min(len(filt), 3000), random_state=42)
         for _, row in sample.iterrows():
@@ -759,9 +852,8 @@ with col_map:
             'try{mp.invalidateSize();}catch(e){}});},400);</script>'))
         st_folium(m, width=None, height=900, returned_objects=[])
 
-    # ── COMPARE MAP — custom swipe, no SideBySideLayers plugin ───────────────────
+    # ── COMPARE MAP ───────────────────────────────────────────────────────────
     elif mode == "⟺ Compare":
-        # Build per-hexagon color dicts for both topics
         lc_map = {feat["properties"].get("GRID_ID",""):
                   (topic_df.loc[feat["properties"]["GRID_ID"], "color"]
                    if feat["properties"].get("GRID_ID","") in topic_df.index else "#dddddd")
@@ -778,6 +870,7 @@ with col_map:
         lbl_r  = sel_topic2
         col_l  = TOPIC_BASE_COLORS.get(sel_topic,  "#555")
         col_r  = TOPIC_BASE_COLORS.get(sel_topic2, "#555")
+        bounds_js = json.dumps(_MAP_BOUNDS)
 
         html_content = f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8">
@@ -817,8 +910,8 @@ html,body{{margin:0;padding:0;height:100%;overflow:hidden;}}
 var GJ = {gj_js};
 var LC = {lc_js};
 var RC = {rc_js};
+var BOUNDS = {bounds_js};
 
-/* Position divider + handle at true center immediately, before Leaflet loads */
 (function(){{
   var visH;
   try {{ visH = window.frameElement ? window.frameElement.offsetHeight : window.innerHeight; }}
@@ -832,11 +925,14 @@ var RC = {rc_js};
   h.style.top  = h2+'px';
 }})();
 
-var map = L.map('map',{{zoomControl:true}}).setView([50.075,14.437],11);
+var map = L.map('map',{{zoomControl:true}});
+map.fitBounds(BOUNDS);
 L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
   {{attribution:'&copy; CartoDB',maxZoom:19}}).addTo(map);
 
-/* Each layer MUST have its own SVG renderer so they get separate <svg> elements */
+/* Scale bar */
+L.control.scale({{imperial:false}}).addTo(map);
+
 var rL = L.svg();
 var rR = L.svg();
 
@@ -858,9 +954,6 @@ var divEl    = document.getElementById('divider');
 var handleEl = document.getElementById('handle');
 var mapEl    = document.getElementById('map');
 
-/* Read the ACTUAL rendered height of the iframe element in the parent page.
-   window.innerHeight inside an iframe returns the iframe's height= attribute (900),
-   not the CSS-overridden visible height. frameElement.offsetHeight is the truth. */
 function getVisH(){{
   try {{
     if(window.frameElement) return window.frameElement.offsetHeight;
@@ -871,13 +964,9 @@ function getVisH(){{
 function clip(x){{
   var w = mapEl.offsetWidth;
   x = Math.max(2, Math.min(x, w-2));
-  /* Use the renderer containers directly so we know which SVG is left vs right */
   var lSvg = rL._container;
   var rSvg = rR._container;
   if(lSvg && rSvg){{
-    /* getBoundingClientRect gives the true rendered position of the SVG,
-       accounting for Leaflet's padding offset. Convert map-relative x
-       to SVG-relative x by subtracting the SVG's left edge. */
     var mapRect = mapEl.getBoundingClientRect();
     var svgRect = lSvg.getBoundingClientRect();
     var svgW    = svgRect.width;
@@ -892,7 +981,6 @@ function clip(x){{
   handleEl.style.top  = Math.round(getVisH()/2)+'px';
 }}
 
-/* Init clip as soon as map is ready, and again after a short delay */
 map.whenReady(function(){{ clip(mapEl.offsetWidth/2); }});
 setTimeout(function(){{ clip(mapEl.offsetWidth/2); }}, 150);
 setTimeout(function(){{ clip(mapEl.offsetWidth/2); }}, 400);
@@ -901,7 +989,6 @@ map.on('move zoom', function(){{
   clip(x);
 }});
 
-/* Drag — both divider line and handle are draggable */
 var drag = false;
 function startDrag(e){{ drag=true; map.dragging.disable(); e.preventDefault(); e.stopPropagation(); }}
 divEl.addEventListener('mousedown', startDrag);
