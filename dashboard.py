@@ -825,7 +825,7 @@ with col_map:
     elif mode == "💬 Comments":
         m = folium.Map(tiles="CartoDB positron", control_scale=True)
         m.fit_bounds(_MAP_BOUNDS)
-        cluster = MarkerCluster(max_cluster_radius=50).add_to(m)
+        cluster = MarkerCluster(max_cluster_radius=50, options={"showCoverageOnHover": False}).add_to(m)
         sample  = filt.sample(min(len(filt), 3000), random_state=42)
         for _, row in sample.iterrows():
             ec = EMOTION_COLORS.get(str(row.get("emotion","")), "#888")
