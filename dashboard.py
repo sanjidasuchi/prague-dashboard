@@ -16,13 +16,18 @@ st.set_page_config(page_title="Prague Mapped by People and Satellites",
 
 st.markdown("""
 <style>
-    header[data-testid="stHeader"] { display:none !important; }
-    [data-testid="stToolbar"]      { display:none !important; }
-    [data-testid="stDecoration"]   { display:none !important; }
+    header[data-testid="stHeader"]    { display:none !important; }
+    [data-testid="stToolbar"]         { display:none !important; }
+    [data-testid="stDecoration"]      { display:none !important; }
     [data-testid="stAppDeployButton"] { display:none !important; }
-    .stAppDeployButton             { display:none !important; }
-    #MainMenu                      { display:none !important; }
-    footer                         { display:none !important; }
+    [data-testid="stStatusWidget"]    { display:none !important; }
+    [data-testid="manage-app-button"] { display:none !important; }
+    .stAppDeployButton                { display:none !important; }
+    .viewerBadge_container            { display:none !important; }
+    .viewerBadge_link                 { display:none !important; }
+    #MainMenu                         { display:none !important; }
+    footer                            { display:none !important; }
+    iframe ~ div[style*="position: fixed"] { display:none !important; }
 
     html, body { overflow:hidden !important; margin:0 !important; }
     .block-container { padding:0 !important; max-width:100% !important; }
