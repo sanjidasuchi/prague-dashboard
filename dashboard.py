@@ -19,6 +19,8 @@ st.markdown("""
     header[data-testid="stHeader"] { display:none !important; }
     [data-testid="stToolbar"]      { display:none !important; }
     [data-testid="stDecoration"]   { display:none !important; }
+    [data-testid="stAppDeployButton"] { display:none !important; }
+    .stAppDeployButton             { display:none !important; }
     #MainMenu                      { display:none !important; }
     footer                         { display:none !important; }
 
