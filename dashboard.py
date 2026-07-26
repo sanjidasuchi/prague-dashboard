@@ -625,16 +625,22 @@ with col_right:
         )
 
         # Indicator label + expandable description
-        st.markdown(
-            f'<div style="font-size:10px;font-weight:700;color:#555;margin-top:6px">'
-            f'{_ind_lbl}</div>',
-            unsafe_allow_html=True)
         if _ind_desc:
-            with st.expander("ℹ️ About this indicator"):
-                st.markdown(
-                    f'<div style="font-size:10px;color:#333;line-height:1.6">'
-                    f'{_ind_desc}</div>',
-                    unsafe_allow_html=True)
+            st.markdown(
+                f'<div style="font-size:10px;font-weight:700;color:#555;margin-top:6px">'
+                f'{_ind_lbl}</div>'
+                f'<details style="margin-top:4px;border:1px solid #ddd;border-radius:6px;padding:4px 10px">'
+                f'<summary style="font-size:13px;color:#222;cursor:pointer;font-weight:500;padding:4px 0">'
+                f'&#8505;&#65039; About this indicator</summary>'
+                f'<div style="font-size:10px;color:#333;line-height:1.6;margin-top:6px">'
+                f'{_ind_desc}</div>'
+                f'</details>',
+                unsafe_allow_html=True)
+        else:
+            st.markdown(
+                f'<div style="font-size:10px;font-weight:700;color:#555;margin-top:6px">'
+                f'{_ind_lbl}</div>',
+                unsafe_allow_html=True)
 
         # ── Spearman correlation card ──────────────────────────────────────────
         sp = _spearman.get(sel_topic, {})
