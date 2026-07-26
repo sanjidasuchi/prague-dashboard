@@ -693,7 +693,10 @@ with col_right:
                 f'<span style="color:{sig_color};font-weight:600">{sig_label}</span></div>'
                 f'<div style="font-size:10px;color:#888;margin-top:2px">n = {sp["n"]} hexagons</div>',
                 unsafe_allow_html=True)
-            st.caption(_r_interpret(r_val, sel_topic, _ind_lbl))
+            st.markdown(
+                f'<div style="font-size:12px;color:#444;margin-top:4px;line-height:1.5">'
+                f'{_r_interpret(r_val, sel_topic, _ind_lbl)}</div>',
+                unsafe_allow_html=True)
         if mode == "⟺ Compare":
             sp2 = _spearman.get(sel_topic2, {})
             if sp2.get("r") is not None:
