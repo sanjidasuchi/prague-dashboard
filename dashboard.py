@@ -1,4 +1,4 @@
-# v2.1
+# v2.2
 import os, json, tempfile
 import pandas as pd
 from scipy import stats
@@ -147,13 +147,42 @@ TOPIC_EMOTION = {
 
 # Plain-language descriptions shown below each topic selector
 TOPIC_DESCRIPTIONS = {
-    "Safety":         "Residents reported feeling <b>unsafe</b> in these areas due to poor lighting, isolation, or perceived crime risk.",
+    "Safety":         "Residents reported feeling <b>unsafe</b> in these areas due to isolation, overcrowding, perceived crime risk, or poor environmental conditions.",
     "Proudness":      "Residents feel <b>civic pride</b> here, linked to historical architecture, well-kept public spaces, or local identity.",
     "Free Time":      "Residents use these areas for <b>leisure</b>, including parks, cafes, sports facilities, and cultural venues.",
     "Green Space":    "Residents reported a <b>lack</b> of green space here. Parks, trees, and nature are perceived as insufficient.",
     "Need to Change": "Residents feel these areas <b>need improvement</b>, including neglected infrastructure, poor maintenance, or unsafe conditions.",
     "Traffic Hazard": "Residents perceive these areas as <b>dangerous for road users</b> due to heavy traffic, poor crossings, or unsafe roads.",
     "Waste Bin":      "Residents reported <b>waste and cleanliness problems</b> here, including litter, insufficient bins, or poor sanitation.",
+}
+
+# Topic-specific legend labels for the bivariate map
+TOPIC_ACTIVITY_LABEL = {
+    "Safety":         "Safety Concern",
+    "Proudness":      "Civic Pride",
+    "Free Time":      "Free Time Activity",
+    "Green Space":    "Green Space Demand",
+    "Need to Change": "Need for Change",
+    "Traffic Hazard": "Traffic Hazard",
+    "Waste Bin":      "Waste Concern",
+}
+TOPIC_HIGH_LABEL = {
+    "Safety":         "High concern",
+    "Proudness":      "High pride",
+    "Free Time":      "High activity",
+    "Green Space":    "High demand",
+    "Need to Change": "High need",
+    "Traffic Hazard": "High hazard",
+    "Waste Bin":      "High concern",
+}
+TOPIC_LOW_LABEL = {
+    "Safety":         "Low concern",
+    "Proudness":      "Low pride",
+    "Free Time":      "Low activity",
+    "Green Space":    "Low demand",
+    "Need to Change": "Low need",
+    "Traffic Hazard": "Low hazard",
+    "Waste Bin":      "Low concern",
 }
 
 # Plain-language descriptions for satellite indicators (matched by keyword in y_label)
@@ -428,7 +457,6 @@ def popup_html(gid, tdf, cbh, pct_data=None, topic=""):
         for c in cx
     ]) or "<i style='font-size:10px;color:#aaa'>No comments</i>"
 
-    # Header shows topic name + respondent count instead of internal grid ID
     header_topic = topic if topic else "Area"
     return (
         f'<div style="font-family:sans-serif;min-width:230px;max-width:310px">'
@@ -492,12 +520,10 @@ with col_left:
         '<hr style="margin:6px 0;border-color:#e0e0e0">',
         unsafe_allow_html=True)
 
-    # ── View Mode ──────────────────────────────────────────────────────────────
     st.markdown('<div style="font-size:13px;font-weight:700;margin-bottom:4px">View Mode</div>',
                 unsafe_allow_html=True)
     mode = st.selectbox("View Mode", _MODES, label_visibility="collapsed", key="mode_radio")
 
-    # ── Topic selector — always in left panel, below View Mode ────────────────
     if mode != "💬 Comments":
         st.markdown(
             '<hr style="margin:8px 0;border-color:#e0e0e0">'
@@ -506,7 +532,6 @@ with col_left:
         sel_topic = st.selectbox("Topic", topics, label_visibility="collapsed", key="topic_bv")
         sel_topic2 = [t for t in topics if t != sel_topic][0]
 
-        # Topic description — always visible below the selector
         _tdesc = TOPIC_DESCRIPTIONS.get(sel_topic, "")
         if _tdesc:
             st.markdown(
@@ -516,7 +541,6 @@ with col_left:
                 f'{_tdesc}</div>',
                 unsafe_allow_html=True)
 
-        # Second topic for Compare mode
         if mode == "⟺ Compare":
             st.markdown(
                 '<div style="font-size:13px;font-weight:700;margin-top:10px;margin-bottom:4px">'
@@ -587,6 +611,8 @@ with col_right:
         _ind_lbl   = str(_ylbl_rows.iloc[0]) if len(_ylbl_rows) > 0 else "Env"
         _ind_desc  = _get_ind_desc(_ind_lbl)
 
+        _act_lbl = TOPIC_ACTIVITY_LABEL.get(sel_topic, "Activity")
+
         st.markdown(
             '<div style="font-size:14px;font-weight:700;margin-bottom:6px;color:#222;'
             'display:flex;align-items:center;gap:5px">'
@@ -594,9 +620,9 @@ with col_right:
             '<table style="border-collapse:collapse;font-size:12px">'
             '<tr>'
             '<td style="padding-right:4px">'
-            '<div style="writing-mode:vertical-rl;transform:rotate(180deg);'
-            'font-weight:600;font-size:11px;height:110px;color:#222;'
-            'display:flex;align-items:center;justify-content:center">Activity ↑</div></td>'
+            f'<div style="writing-mode:vertical-rl;transform:rotate(180deg);'
+            f'font-weight:600;font-size:11px;height:110px;color:#222;'
+            f'display:flex;align-items:center;justify-content:center">{_act_lbl} ↑</div></td>'
             '<td><table style="border-collapse:separate;border-spacing:3px;background:#ddd;border:1px solid #ddd;border-radius:2px">'
             '<tr>'
             '<td style="font-size:11px;padding:2px 4px;font-weight:600;color:#222;background:#fff"></td>'
@@ -624,14 +650,13 @@ with col_right:
             f'padding-top:4px">{_ind_lbl} &#8594;</td>'
             '</tr></table></td></tr></table>'
             f'<div style="font-size:11px;color:#555;margin-top:6px;line-height:1.7">'
-            f'<span style="color:#be64ac;font-size:14px">&#9632;</span> High demand, Low {_ind_lbl}<br>'
-            f'<span style="color:#3b4994;font-size:14px">&#9632;</span> Low demand, High {_ind_lbl}<br>'
+            f'<span style="color:#be64ac;font-size:14px">&#9632;</span> {TOPIC_HIGH_LABEL.get(sel_topic, "High demand")}, Low {_ind_lbl}<br>'
+            f'<span style="color:#3b4994;font-size:14px">&#9632;</span> {TOPIC_LOW_LABEL.get(sel_topic, "Low demand")}, High {_ind_lbl}<br>'
             '<span style="color:#a5b4c2;font-size:14px">&#9632;</span> Average both'
             '</div>',
             unsafe_allow_html=True
         )
 
-        # Indicator label + expandable description
         if _ind_desc:
             st.markdown(
                 f'<div style="font-size:10px;font-weight:700;color:#555;margin-top:6px">'
@@ -800,14 +825,12 @@ with col_map:
             for gid in topic_df.index
         }
 
-        # fit_bounds ensures the full hexagon grid is always centred and visible
         m = folium.Map(tiles="CartoDB positron", control_scale=True)
         m.fit_bounds(_MAP_BOUNDS)
 
         for feat in geojson["features"]:
             gid   = feat["properties"].get("GRID_ID", "")
             color = topic_df.loc[gid, "color"] if gid in topic_df.index else "#dddddd"
-            # Tooltip shows activity classification instead of raw grid ID
             tip_text = ""
             if gid in topic_df.index and gid in _pct_data:
                 xp = _pct_data[gid].get("x_pct")
@@ -946,7 +969,6 @@ map.fitBounds(BOUNDS);
 L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
   {{attribution:'&copy; CartoDB',maxZoom:19}}).addTo(map);
 
-/* Scale bar */
 L.control.scale({{imperial:false}}).addTo(map);
 
 var rL = L.svg();
