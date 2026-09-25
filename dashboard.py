@@ -825,7 +825,11 @@ with col_map:
             for gid in topic_df.index
         }
 
-        m = folium.Map(tiles="CartoDB positron", control_scale=True)
+        m = folium.Map(tiles=None, control_scale=True)
+        folium.TileLayer(
+            tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+            attr="Tiles &copy; Esri", name="Light", control=False, max_zoom=16,
+        ).add_to(m)
         m.fit_bounds(_MAP_BOUNDS)
 
         for feat in geojson["features"]:
@@ -862,7 +866,11 @@ with col_map:
 
     # ── COMMENTS MAP ──────────────────────────────────────────────────────────
     elif mode == "💬 Comments":
-        m = folium.Map(tiles="CartoDB positron", control_scale=True)
+        m = folium.Map(tiles=None, control_scale=True)
+        folium.TileLayer(
+            tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+            attr="Tiles &copy; Esri", name="Light", control=False, max_zoom=16,
+        ).add_to(m)
         m.fit_bounds(_MAP_BOUNDS)
         cluster = MarkerCluster(max_cluster_radius=50, options={"showCoverageOnHover": False}).add_to(m)
         sample  = filt.sample(min(len(filt), 3000), random_state=42)
@@ -966,8 +974,8 @@ var BOUNDS = {bounds_js};
 
 var map = L.map('map',{{zoomControl:true}});
 map.fitBounds(BOUNDS);
-L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png',
-  {{attribution:'&copy; CartoDB',maxZoom:19}}).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{{z}}/{{y}}/{{x}}',
+  {{attribution:'Tiles &copy; Esri',maxZoom:16}}).addTo(map);
 
 L.control.scale({{imperial:false}}).addTo(map);
 
